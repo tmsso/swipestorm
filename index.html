@@ -1,0 +1,1139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Swipe-style brainstorming: swipe AI-dealt cards, get a brief, plan, spec or handoff prompt.">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box}body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Swipestorm</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one-screen phone app. Blue-grey desk, ruled index cards stacked in the middle,
+   four direction controls at the bottom; header carries the goal meter and slot pips. */
+:root{
+  --desk:#e4e9f0; --desk-2:#d7dee8; --card:#fdfdfa; --ink:#1b2430; --muted:#5b6677; --line:#c9d1dc;
+  --rule-blue:#cfdcf0; --rule-red:#e08a83;
+  --accent:#2c50cf; --accent-ink:#ffffff;
+  --keep:#17905f; --drop:#cf3e36; --lock:#b67a00; --hold:#46679f;
+  --shadow:0 1px 2px rgba(20,32,52,.10),0 10px 28px -10px rgba(20,32,52,.30);
+  --f-display:"Big Shoulders Display","Arial Narrow","Roboto Condensed",sans-serif;
+  --f-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --desk:#121820; --desk-2:#1a222d; --card:#1e2631; --ink:#e7ecf3; --muted:#9aa5b5; --line:#2f3a48;
+  --rule-blue:#28354a; --rule-red:#874540;
+  --accent:#86a2ff; --accent-ink:#0c1530;
+  --keep:#3cc58b; --drop:#ff6c62; --lock:#f2b632; --hold:#86a6e6;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 30px -10px rgba(0,0,0,.6);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --desk:#121820; --desk-2:#1a222d; --card:#1e2631; --ink:#e7ecf3; --muted:#9aa5b5; --line:#2f3a48;
+  --rule-blue:#28354a; --rule-red:#874540;
+  --accent:#86a2ff; --accent-ink:#0c1530;
+  --keep:#3cc58b; --drop:#ff6c62; --lock:#f2b632; --hold:#86a6e6;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 30px -10px rgba(0,0,0,.6);
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--desk);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;overflow:hidden}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{height:100%;max-width:560px;margin:0 auto;display:flex;flex-direction:column;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px}
+.screen{flex:1;min-height:0;display:flex;flex-direction:column}
+.label{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* ---------- Calibration ---------- */
+.calib{overflow-y:auto;gap:18px;padding-bottom:8px}
+.brand{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-top:6px}
+.brand h1{font-family:var(--f-display);font-weight:800;font-size:44px;line-height:.95;margin:0;letter-spacing:.01em;text-transform:uppercase}
+.brand h1 span{color:var(--accent)}
+.lede{margin:4px 0 0;color:var(--muted);max-width:42ch;text-wrap:balance}
+.field{display:flex;flex-direction:column;gap:8px}
+textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;resize:none;width:100%}
+#topic{min-height:84px;font-size:16px}
+.examples{display:flex;flex-wrap:wrap;gap:6px}
+.examples button{background:none;border:1px dashed var(--line);border-radius:999px;padding:4px 10px;font-size:13px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 12px;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.chip small{display:block;font-size:11px;opacity:.75}
+.row2{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center}
+.legend{display:grid;grid-template-columns:1fr auto 1fr;grid-template-rows:auto auto auto;gap:6px 10px;align-items:center;justify-items:center;
+  background:var(--desk-2);border-radius:12px;padding:14px 10px}
+.legend .mini{grid-column:2;grid-row:2;width:56px;height:74px;border-radius:6px;background:var(--card);box-shadow:var(--shadow);
+  background-image:linear-gradient(var(--rule-red),var(--rule-red)),repeating-linear-gradient(to bottom,transparent 0 11px,var(--rule-blue) 11px 12px);
+  background-size:100% 1px,100% 100%;background-position:0 16px,0 18px;background-repeat:no-repeat,no-repeat}
+.lg{font-size:13px;text-align:center;line-height:1.25}
+.lg b{display:block;font-family:var(--f-display);font-size:18px;letter-spacing:.03em;text-transform:uppercase}
+.lg-up{grid-column:2;grid-row:1}.lg-down{grid-column:2;grid-row:3}.lg-left{grid-column:1;grid-row:2;justify-self:end}.lg-right{grid-column:3;grid-row:2;justify-self:start}
+.lg-up b{color:var(--lock)}.lg-down b{color:var(--hold)}.lg-left b{color:var(--drop)}.lg-right b{color:var(--keep)}
+.primary{background:var(--accent);color:var(--accent-ink);border:0;border-radius:12px;padding:14px 18px;font-weight:700;font-size:16px;width:100%}
+.primary:disabled{opacity:.5;cursor:default}
+.ghost{background:none;border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:14px}
+.note{font-size:13px;color:var(--muted);margin:0}
+
+/* ---------- Session header ---------- */
+.top{display:flex;flex-direction:column;gap:8px;padding-bottom:6px}
+.top-row{display:flex;align-items:center;gap:10px}
+.top-row .name{font-family:var(--f-display);font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:.02em}
+.badge{white-space:nowrap;flex:0 0 auto;font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:4px;padding:2px 5px;color:var(--muted)}
+.badge.live{color:var(--keep);border-color:var(--keep)}
+.spacer{flex:1}
+.counter{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.finish{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 11px;font-size:13px;font-weight:700}
+.finish.ready{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.goal{display:flex;align-items:center;gap:10px}
+.goal-track{flex:1;height:10px;border-radius:5px;background:var(--desk-2);overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
+.goal-fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--keep));border-radius:5px;transition:width .35s ease}
+.goal-pct{font-family:var(--f-display);font-weight:800;font-size:20px;font-variant-numeric:tabular-nums;min-width:4.2ch;text-align:right}
+.slots{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-width:0;padding-bottom:2px}
+.slots::-webkit-scrollbar{display:none}
+.slot{flex:0 0 auto;display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 9px 4px 10px;font-size:12px;white-space:nowrap}
+.slot.full{border-color:var(--keep)}
+.pips{display:inline-flex;gap:2px}
+.pip{width:6px;height:6px;border-radius:50%;background:var(--line)}
+.pip.on{background:var(--keep)}
+.pip.lock{background:var(--lock)}
+.banner{background:var(--desk-2);border-radius:10px;padding:8px 12px;font-size:13px;text-align:center}
+.banner b{color:var(--hold)}
+
+/* ---------- Deck ---------- */
+.stack{flex:1;min-height:0;position:relative;margin:6px 0 10px}
+.card{position:absolute;inset:0;margin:auto;width:min(100%,360px);height:min(100%,460px);
+  background-color:var(--card);border-radius:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden;
+  touch-action:none;user-select:none;-webkit-user-select:none;will-change:transform;transition:transform .25s ease, opacity .25s ease}
+.card.back1{transform:translateY(12px) scale(.955);opacity:.92}
+.card.back2{transform:translateY(24px) scale(.91);opacity:.75}
+.card.top{cursor:grab}
+.card.top:active{cursor:grabbing}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 18px 10px;border-bottom:2px solid var(--rule-red)}
+.slot-tag{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kind{font-family:var(--f-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:4px;border:1px solid var(--line);color:var(--muted);flex:0 0 auto}
+.kind.question{color:var(--hold);border-color:var(--hold)}
+.kind.wildcard{color:var(--lock);border-color:var(--lock)}
+.card-body{flex:1;min-height:0;overflow:auto;padding:12px 18px;
+  background-image:repeating-linear-gradient(to bottom,transparent 0 29px,var(--rule-blue) 29px 30px);background-position:0 8px;line-height:30px}
+.card-title{font-size:23px;line-height:30px;font-weight:700;margin:0 0 6px;text-wrap:balance}
+.card-detail{margin:0;font-size:16px;line-height:30px;color:var(--muted)}
+.card-foot{display:flex;justify-content:space-between;align-items:center;padding:8px 12px 12px 18px;gap:8px}
+.card-foot .hint{font-size:12px;color:var(--muted)}
+.edit-btn{background:none;border:1px solid var(--line);border-radius:7px;padding:4px 10px;font-size:13px}
+.edit-area{font-size:20px;font-weight:700;line-height:1.3;min-height:96px}
+.stamp{position:absolute;font-family:var(--f-display);font-weight:800;font-size:34px;text-transform:uppercase;letter-spacing:.04em;
+  border:4px solid currentColor;border-radius:8px;padding:0 10px;opacity:0;pointer-events:none;background:var(--card)}
+.stamp.right{color:var(--keep);top:56px;left:18px;transform:rotate(-12deg)}
+.stamp.left{color:var(--drop);top:56px;right:18px;transform:rotate(12deg)}
+.stamp.up{color:var(--lock);bottom:70px;left:50%;transform:translateX(-50%)}
+.stamp.down{color:var(--hold);top:62px;left:50%;transform:translateX(-50%)}
+.card[data-dir="right"] .stamp.right,.card[data-dir="left"] .stamp.left,.card[data-dir="up"] .stamp.up,.card[data-dir="down"] .stamp.down{opacity:var(--s,0)}
+.card.placeholder{align-items:center;justify-content:center;text-align:center;padding:24px;gap:12px;cursor:default}
+.card.placeholder p{margin:0;color:var(--muted);max-width:28ch}
+.dealing{display:flex;gap:6px}
+.dealing i{width:10px;height:14px;border-radius:2px;background:var(--rule-blue);animation:deal 1s infinite ease-in-out}
+.dealing i:nth-child(2){animation-delay:.15s}.dealing i:nth-child(3){animation-delay:.3s}
+@keyframes deal{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+/* ---------- Controls ---------- */
+.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;align-items:end}
+.ctl{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;padding:0;font-size:12px;color:var(--muted)}
+.ctl .disc{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:var(--card);box-shadow:var(--shadow);border:2px solid currentColor}
+.ctl svg{width:24px;height:24px}
+.ctl.drop .disc{color:var(--drop)}.ctl.hold .disc{color:var(--hold)}.ctl.lock .disc{color:var(--lock)}.ctl.keep .disc{color:var(--keep)}
+.ctl:disabled{opacity:.35;cursor:default}
+.subctl{display:flex;justify-content:center;padding-top:8px}
+.undo{background:none;border:0;font-size:13px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.undo:disabled{opacity:.4;text-decoration:none;cursor:default}
+
+/* ---------- AI connection ---------- */
+.ai-box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.ai-box input[type=password],.ai-box input[type=text]{font:inherit;font-size:15px;color:var(--ink);background:var(--desk);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%;min-width:0}
+.ai-box input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.models{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.models label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);min-width:0}
+@media (max-width:420px){.models{grid-template-columns:1fr}}
+.check{display:flex;align-items:center;gap:8px;font-size:14px}
+.check input{width:18px;height:18px;accent-color:var(--accent)}
+.key-row{display:flex;gap:8px}
+.key-row input{flex:1}
+.ok{color:var(--keep)}
+
+/* ---------- Temperature ---------- */
+#temp{width:100%;accent-color:var(--accent);margin:2px 0}
+.temp-scale{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--muted)}
+.temp-scale b{font-family:var(--f-display);font-size:20px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink)}
+
+/* ---------- Glyphs ---------- */
+.glyph{font-size:40px;line-height:44px;display:block;margin:2px 0 4px;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.g-sm{display:inline-block;width:1.6em;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+
+/* ---------- Result ---------- */
+.result{overflow-y:auto;gap:16px;padding-bottom:12px}
+.result-head h2{font-family:var(--f-display);font-weight:800;font-size:34px;line-height:1;margin:6px 0 8px;text-transform:uppercase;text-wrap:balance}
+.summary{margin:0;font-size:16px;line-height:1.55;max-width:60ch}
+.section-label{margin:0 0 -6px}
+.output-wrap{background:var(--card);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
+.output-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:2px solid var(--rule-red)}
+.output{padding:4px 16px 16px;font-size:15px;min-width:0;overflow-wrap:anywhere}
+.output h2{font-family:var(--f-display);font-size:26px;text-transform:uppercase;margin:14px 0 6px;line-height:1.05}
+.output h3{font-size:17px;margin:16px 0 4px}
+.output h4{font-size:15px;margin:12px 0 4px}
+.output p{margin:8px 0}
+.output ul,.output ol{margin:6px 0;padding-left:1.3em}
+.output li{margin:3px 0}
+.output code{font-family:var(--f-mono);font-size:13px;background:var(--desk-2);padding:1px 4px;border-radius:4px}
+.codeblock{overflow-x:auto;background:var(--desk-2);border-radius:8px;margin:10px 0}
+.codeblock pre{margin:0;padding:12px;font-family:var(--f-mono);font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.codeblock code{background:none;padding:0}
+.decks{display:flex;flex-direction:column;gap:6px}
+.decks details{background:var(--card);border-radius:10px;padding:10px 14px;border:1px solid var(--line)}
+.decks summary{cursor:pointer;font-weight:700}
+.decks ul{margin:8px 0 2px;padding:0;list-style:none;font-size:14px;display:flex;flex-direction:column;gap:4px}
+.decks li{display:flex;gap:4px;align-items:baseline}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.btn-row .ghost{flex:1}
+.err{color:var(--drop)}
+
+@media (prefers-reduced-motion: reduce){
+  .card,.goal-fill{transition:none}
+  .dealing i{animation:none}
+}
+@media (max-height:640px){ .card-title{font-size:20px} .ctl .disc{width:48px;height:48px} .brand h1{font-size:36px} }
+</style>
+
+<div class="app">
+
+  <!-- Calibration -->
+  <section class="screen calib" id="scr-calib">
+    <div>
+      <div class="brand"><h1>Swipe<span>storm</span></h1><span class="badge" id="live-badge">Checking…</span></div>
+      <p class="lede">Tell it what you're ideating. Swipe the cards it deals. Get a finished brief, spec or handoff prompt.</p>
+    </div>
+
+    <div class="field">
+      <label class="label" for="topic">What are we ideating?</label>
+      <textarea id="topic" rows="3">A long weekend in Vienna for two, early December</textarea>
+      <div class="examples" aria-label="Examples">
+        <button type="button" data-ex="An app that turns family dinners into a weekly tradition" data-type="app">App: family dinners</button>
+        <button type="button" data-ex="A 40th birthday party for my wife at home, about 25 guests" data-type="event">Event: 40th birthday</button>
+        <button type="button" data-ex="A side business selling custom crossword puzzles" data-type="business">Business: crosswords</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="label" id="lbl-type">It's a…</span>
+      <div class="chips" role="group" aria-labelledby="lbl-type" data-group="type">
+        <button type="button" class="chip" data-v="app">App</button>
+        <button type="button" class="chip" data-v="trip">Trip</button>
+        <button type="button" class="chip" data-v="event">Event</button>
+        <button type="button" class="chip" data-v="business">Business</button>
+        <button type="button" class="chip" data-v="other">Something else</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="label" id="lbl-out">At the end I want…</span>
+      <div class="chips" role="group" aria-labelledby="lbl-out" data-group="output">
+        <button type="button" class="chip" data-v="brief">Brief<small>one page to act on</small></button>
+        <button type="button" class="chip" data-v="plan">Plan<small>steps, timeline, to-dos</small></button>
+        <button type="button" class="chip" data-v="spec">Build spec<small>features, structure, risks</small></button>
+        <button type="button" class="chip" data-v="prompt">Handoff prompt<small>paste into Claude</small></button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="label" for="temp">Practical or creative?</label>
+      <input type="range" id="temp" min="1" max="5" step="1" value="3" aria-describedby="temp-desc">
+      <div class="temp-scale"><span>Practical</span><b id="temp-name">Balanced</b><span>Creative</span></div>
+      <p class="note" id="temp-desc">A mix of solid picks and some surprises.</p>
+    </div>
+
+    <div class="field">
+      <span class="label" id="lbl-len">Session length</span>
+      <div class="chips" role="group" aria-labelledby="lbl-len" data-group="length">
+        <button type="button" class="chip" data-v="c12">12 cards</button>
+        <button type="button" class="chip" data-v="c20">20 cards</button>
+        <button type="button" class="chip" data-v="c30">30 cards</button>
+        <button type="button" class="chip" data-v="t3">3 min</button>
+        <button type="button" class="chip" data-v="t5">5 min</button>
+      </div>
+    </div>
+
+    <div class="legend" aria-label="Swipe directions">
+      <div class="lg lg-up"><b>Must-have</b>locks it in</div>
+      <div class="lg lg-left"><b>Drop</b>never again</div>
+      <div class="mini" aria-hidden="true"></div>
+      <div class="lg lg-right"><b>Keep</b>good one</div>
+      <div class="lg lg-down"><b>Later</b>decide at the end</div>
+    </div>
+
+    <div class="field">
+      <span class="label" id="lbl-ai">AI connection</span>
+      <div class="ai-box" id="ai-checking"><span class="note">Checking where this page is running…</span></div>
+      <div class="ai-box" id="ai-claude" hidden>
+        <span><b>Using your Claude account.</b> This page is running inside Claude, so the cards come from your own Claude plan. No key needed.</span>
+      </div>
+      <div id="ai-byok" hidden style="display:flex;flex-direction:column;gap:8px">
+        <div class="chips" role="group" aria-labelledby="lbl-ai" id="provider-chips">
+          <button type="button" class="chip" data-p="anthropic">Anthropic key</button>
+          <button type="button" class="chip" data-p="openrouter">OpenRouter key</button>
+          <button type="button" class="chip" data-p="sample">No key: sample deck</button>
+        </div>
+        <div class="ai-box" id="key-box">
+          <label class="label" for="api-key" id="key-label">Anthropic API key</label>
+          <div class="key-row">
+            <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…">
+            <button type="button" class="ghost" id="show-key" aria-pressed="false">Show</button>
+          </div>
+          <div class="models">
+            <label>Fast model, for cards<input id="m-fast" type="text" list="model-list" autocomplete="off" spellcheck="false"></label>
+            <label>Writer model, for the output<input id="m-main" type="text" list="model-list" autocomplete="off" spellcheck="false"></label>
+          </div>
+          <datalist id="model-list"></datalist>
+          <label class="check"><input type="checkbox" id="remember"> Remember the key on this device</label>
+          <div class="btn-row"><button type="button" class="ghost" id="test-key">Test connection</button></div>
+          <p class="note" id="key-note">Your key stays in this browser and is sent only to Anthropic.</p>
+        </div>
+        <p class="note" id="sample-note" hidden>Runs a built-in Vienna weekend deck with no AI, so you can try the swiping.</p>
+      </div>
+    </div>
+
+    <button class="primary" id="start" type="button">Deal the cards</button>
+    <p class="note" id="calib-note">Each card fills one part of the plan. The goal meter shows how many parts are covered.</p>
+  </section>
+
+  <!-- Swiping -->
+  <section class="screen" id="scr-swipe" hidden>
+    <div class="top">
+      <div class="top-row">
+        <span class="name">Swipestorm</span>
+        <span class="badge" id="mode-badge">Live</span>
+        <span class="spacer"></span>
+        <span class="counter" id="counter">Card 1 / 20</span>
+        <button class="finish" id="finish" type="button">Finish</button>
+      </div>
+      <div class="goal">
+        <div class="goal-track" role="progressbar" aria-label="Goal" aria-valuemin="0" aria-valuemax="100" id="goal-bar"><div class="goal-fill" id="goal-fill"></div></div>
+        <span class="goal-pct" id="goal-pct">0%</span>
+      </div>
+      <div class="slots" id="slots"></div>
+      <div class="banner" id="banner" hidden></div>
+    </div>
+    <div class="stack" id="stack"></div>
+    <div class="controls" id="controls">
+      <button class="ctl drop" data-dir="left" type="button" aria-label="Drop (left)"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span>Drop</button>
+      <button class="ctl hold" data-dir="down" type="button" aria-label="Later (down)"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span>Later</button>
+      <button class="ctl lock" data-dir="up" type="button" aria-label="Must-have (up)"><span class="disc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2l2.6 5.5 6 .7-4.4 4.1 1.2 5.9L12 16.5l-5.4 2.9 1.2-5.9L3.4 9.4l6-.7z"/></svg></span>Must-have</button>
+      <button class="ctl keep" data-dir="right" type="button" aria-label="Keep (right)"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Keep</button>
+    </div>
+    <div class="subctl"><button class="undo" id="undo" type="button" disabled>Undo last swipe</button></div>
+  </section>
+
+  <!-- Result -->
+  <section class="screen result" id="scr-result" hidden>
+    <div class="result-head">
+      <span class="label">Summary</span>
+      <h2 id="res-name">Your session</h2>
+      <p class="summary" id="res-summary">Summarising…</p>
+    </div>
+    <p class="label section-label">Your cards</p>
+    <div class="decks" id="decks"></div>
+    <p class="label section-label" id="res-kind">Handoff prompt</p>
+    <div class="output-wrap">
+      <div class="output-bar">
+        <span class="label" id="out-status">Writing…</span>
+        <span class="spacer"></span>
+        <button class="ghost" id="copy" type="button" disabled>Copy</button>
+      </div>
+      <div class="output" id="output"></div>
+    </div>
+    <div class="btn-row">
+      <button class="ghost" id="regen" type="button" disabled>Write it again</button>
+      <button class="ghost" id="again" type="button">New session</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+"use strict";
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ======================================================================
+   AI connection
+   Inside a Claude artifact: window.claude.use("sample") → the viewer's Claude.
+   Anywhere else (GitHub Pages, file opened from disk): bring your own key,
+   Anthropic API or OpenRouter, called straight from the browser.
+   ====================================================================== */
+const PROVIDERS = {
+  anthropic: { name: "Anthropic", keyHint: "sk-ant-…", fast: "claude-haiku-5-5", main: "claude-sonnet-5-5" },
+  openrouter: { name: "OpenRouter", keyHint: "sk-or-…", fast: "anthropic/claude-haiku-5.5", main: "anthropic/claude-sonnet-5.5" },
+};
+const STORE_KEY = "swipestorm.ai.v1";
+const AI = { mode: "pending", sample: null, provider: "anthropic", keys: {}, models: {}, remember: false };
+const store = {
+  load() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || "null"); } catch { return null; } },
+  save() {
+    try {
+      const data = { provider: AI.provider, models: AI.models, remember: AI.remember, keys: AI.remember ? AI.keys : {} };
+      localStorage.setItem(STORE_KEY, JSON.stringify(data));
+    } catch {}
+  },
+};
+const model = tier => (AI.models[AI.provider] || {})[tier === "quick" ? "fast" : "main"] || PROVIDERS[AI.provider][tier === "quick" ? "fast" : "main"];
+const aiLive = () => AI.mode === "claude" || (AI.mode === "byok" && AI.provider !== "sample" && !!(AI.keys[AI.provider] || "").trim());
+
+const aiReady = (async () => {
+  let s = null;
+  if (window.claude && typeof window.claude.use === "function") {
+    try { s = await window.claude.use("sample"); } catch { s = null; }
+  }
+  if (s) { AI.mode = "claude"; AI.sample = s; }
+  else {
+    AI.mode = "byok";
+    const saved = store.load();
+    if (saved) {
+      AI.provider = PROVIDERS[saved.provider] || saved.provider === "sample" ? saved.provider : "anthropic";
+      AI.models = saved.models || {};
+      AI.remember = !!saved.remember;
+      AI.keys = saved.keys || {};
+    }
+  }
+  renderAI();
+})();
+
+function renderAI() {
+  $("#ai-checking").hidden = true;
+  $("#ai-claude").hidden = AI.mode !== "claude";
+  $("#ai-byok").hidden = AI.mode !== "byok";
+  const b = $("#live-badge");
+  if (AI.mode === "claude") { b.textContent = "Your Claude"; b.classList.add("live"); return; }
+  const p = AI.provider, isKey = p !== "sample";
+  document.querySelectorAll("#provider-chips .chip").forEach(c => c.setAttribute("aria-pressed", String(c.dataset.p === p)));
+  $("#key-box").hidden = !isKey;
+  $("#sample-note").hidden = isKey;
+  if (isKey) {
+    const P = PROVIDERS[p];
+    $("#key-label").textContent = `${P.name} API key`;
+    $("#api-key").placeholder = P.keyHint;
+    $("#api-key").value = AI.keys[p] || "";
+    $("#m-fast").value = model("quick");
+    $("#m-main").value = model("default");
+    $("#remember").checked = AI.remember;
+    $("#key-note").textContent = `Your key stays in this browser${AI.remember ? " (saved on this device)" : " for this visit only"} and is sent only to ${P.name}.`;
+    if (p === "openrouter") loadOpenRouterModels();
+    else $("#model-list").innerHTML = ["claude-haiku-5-5","claude-sonnet-5-5","claude-opus-5-5"].map(m => `<option value="${m}">`).join("");
+  }
+  b.textContent = !isKey ? "Sample deck" : aiLive() ? P_name(p) : "Key needed";
+  b.classList.toggle("live", aiLive());
+}
+const P_name = p => PROVIDERS[p] ? PROVIDERS[p].name : "Sample deck";
+
+let orModelsLoaded = false;
+async function loadOpenRouterModels() {
+  if (orModelsLoaded) return; orModelsLoaded = true;
+  try {
+    const r = await fetch("https://openrouter.ai/api/v1/models");
+    const j = await r.json();
+    const ids = (j.data || []).map(m => m.id).sort((a, b) => (b.startsWith("anthropic/") - a.startsWith("anthropic/")) || a.localeCompare(b));
+    $("#model-list").innerHTML = ids.map(id => `<option value="${esc(id)}">`).join("");
+  } catch { orModelsLoaded = false; }
+}
+
+$("#provider-chips").addEventListener("click", e => {
+  const c = e.target.closest(".chip"); if (!c) return;
+  AI.provider = c.dataset.p; store.save(); renderAI();
+});
+$("#api-key").addEventListener("input", e => { AI.keys[AI.provider] = e.target.value.trim(); store.save(); renderAI(); $("#api-key").focus(); });
+$("#show-key").addEventListener("click", () => {
+  const i = $("#api-key"), show = i.type === "password";
+  i.type = show ? "text" : "password"; $("#show-key").textContent = show ? "Hide" : "Show"; $("#show-key").setAttribute("aria-pressed", String(show));
+});
+["m-fast","m-main"].forEach(id => $("#" + id).addEventListener("change", () => {
+  AI.models[AI.provider] = { fast: $("#m-fast").value.trim() || PROVIDERS[AI.provider].fast, main: $("#m-main").value.trim() || PROVIDERS[AI.provider].main };
+  store.save();
+}));
+$("#remember").addEventListener("change", e => { AI.remember = e.target.checked; store.save(); renderAI(); });
+$("#test-key").addEventListener("click", async () => {
+  const note = $("#key-note"), btn = $("#test-key");
+  if (!aiLive()) { note.innerHTML = `<span class="err">Paste a key first.</span>`; $("#api-key").focus(); return; }
+  btn.disabled = true; note.textContent = "Testing both models…";
+  try {
+    await aiText("Reply with the single word OK.", { tier: "quick", maxTokens: 16 });
+    await aiText("Reply with the single word OK.", { tier: "default", maxTokens: 16 });
+    note.innerHTML = `<span class="ok">Connected. Both models answered.</span>`;
+  } catch (e) {
+    note.innerHTML = `<span class="err">${esc(ERR[e.code] || ERR.upstream_error)}</span> <span class="note">(${esc(e.code || "error")}${e.message ? ": " + esc(String(e.message).slice(0, 140)) : ""})</span>`;
+  }
+  btn.disabled = false;
+});
+
+/* ---------- one interface over the three back ends ---------- */
+function aiErr(code, message, text) { return { code, message: message || "", text }; }
+async function aiText(prompt, { tier = "default", onText, signal, maxTokens } = {}) {
+  if (AI.mode === "claude") {
+    const opts = { cache: false, modelTier: tier === "quick" ? "quick" : "default" };
+    if (tier !== "quick") opts.effort = "low";
+    if (signal) opts.signal = signal;
+    if (onText) opts.onText = onText;
+    return AI.sample(prompt, opts);
+  }
+  const p = AI.provider, key = (AI.keys[p] || "").trim();
+  if (p === "sample" || !key) throw aiErr("no_key");
+  const max = maxTokens || (tier === "quick" ? 3000 : 4000);
+  const messages = [{ role: "user", content: prompt }];
+  let url, headers, body;
+  if (p === "anthropic") {
+    url = "https://api.anthropic.com/v1/messages";
+    headers = { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" };
+    body = { model: model(tier), max_tokens: max, messages, stream: true };
+  } else {
+    url = "https://openrouter.ai/api/v1/chat/completions";
+    headers = { "content-type": "application/json", "authorization": "Bearer " + key, "X-Title": "Swipestorm" };
+    if (/^https?:/.test(location.href)) headers["HTTP-Referer"] = location.origin;
+    body = { model: model(tier), max_tokens: max, messages, stream: true };
+  }
+  let res;
+  try { res = await fetch(url, { method: "POST", headers, body: JSON.stringify(body), signal }); }
+  catch (e) { throw aiErr(e && e.name === "AbortError" ? "cancelled" : "network", e && e.message); }
+  if (!res.ok) {
+    let msg = ""; try { const j = await res.json(); msg = (j.error && (j.error.message || j.error.type)) || JSON.stringify(j).slice(0, 200); } catch {}
+    const s = res.status;
+    const code = s === 401 || s === 403 ? "bad_key" : s === 402 ? "no_credit" : s === 404 || (s === 400 && /model/i.test(msg)) ? "bad_model" : s === 429 ? "rate_limited" : s === 400 ? "bad_request" : "upstream_error";
+    throw aiErr(code, msg);
+  }
+  let text = "", truncated = false;
+  const emit = d => { if (!d) return; text += d; if (onText) { try { onText({ text, delta: d }); } catch {} } };
+  try {
+    await readSSE(res, ev => {
+      if (ev.error) throw aiErr(ev.error.type === "overloaded_error" ? "upstream_error" : "upstream_error", ev.error.message, text);
+      if (p === "anthropic") {
+        if (ev.type === "content_block_delta" && ev.delta && ev.delta.type === "text_delta") emit(ev.delta.text);
+        if (ev.type === "message_delta" && ev.delta && ev.delta.stop_reason === "max_tokens") truncated = true;
+      } else {
+        const ch = ev.choices && ev.choices[0]; if (!ch) return;
+        emit(ch.delta && ch.delta.content);
+        if (ch.finish_reason === "length") truncated = true;
+      }
+    });
+  } catch (e) {
+    if (e && e.code) throw e;
+    throw aiErr(e && e.name === "AbortError" ? "cancelled" : "network", e && e.message, text);
+  }
+  if (!text.trim()) throw aiErr("empty_completion");
+  return { text, truncated };
+}
+async function readSSE(res, onEvent) {
+  const reader = res.body.getReader(), dec = new TextDecoder();
+  let buf = "";
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    let i;
+    while ((i = buf.indexOf("\n")) >= 0) {
+      const line = buf.slice(0, i).replace(/\r$/, ""); buf = buf.slice(i + 1);
+      if (!line.startsWith("data:")) continue;
+      const data = line.slice(5).trim();
+      if (!data || data === "[DONE]") continue;
+      let ev; try { ev = JSON.parse(data); } catch { continue; }
+      onEvent(ev);
+    }
+  }
+}
+function parseLoose(t) {
+  const tryP = s => { try { return JSON.parse(s); } catch { return undefined; } };
+  let v = tryP(t.trim()); if (v !== undefined) return v;
+  const f = t.match(/```(?:json)?\s*([\s\S]*?)```/); if (f && (v = tryP(f[1].trim())) !== undefined) return v;
+  const a = t.search(/[[{]/), b = Math.max(t.lastIndexOf("}"), t.lastIndexOf("]"));
+  if (a > -1 && b > a) return tryP(t.slice(a, b + 1));
+  return undefined;
+}
+async function aiJson(prompt, opts = {}) {
+  if (AI.mode === "claude") {
+    const o = { modelTier: "quick", cache: false };
+    if (opts.signal) o.signal = opts.signal;
+    return AI.sample.json(prompt, o);
+  }
+  const { text } = await aiText(prompt + "\n\nYour reply is parsed by a program: output only the JSON value, no prose, no code fences.", { ...opts, tier: "quick" });
+  const v = parseLoose(text);
+  if (v === undefined) throw aiErr("invalid_json", "", text);
+  return v;
+}
+
+/* ---------- state ---------- */
+const TARGET = 3;                        // points that fill one slot
+const POINTS = { keep: 1, lock: 2, drop: 0, hold: 0 };
+const VERDICT = { right: "keep", left: "drop", up: "lock", down: "hold" };
+const OUT_NAME = { brief: "Brief", plan: "Plan", spec: "Build spec", prompt: "Handoff prompt" };
+const TYPE_NAME = { app: "App", trip: "Trip", event: "Event", business: "Business", other: "Idea" };
+const TEMPS = [
+  null,
+  { name: "Practical", desc: "Proven, low-risk options. No wildcards.", rule: "Stick to proven, conventional, low-risk options. No wildcard cards at all." },
+  { name: "Grounded",  desc: "Mostly proven, with a few fresh twists.", rule: "Mostly conventional options with occasional fresh twists. Wildcards: at most 1 in 8 cards." },
+  { name: "Balanced",  desc: "A mix of solid picks and some surprises.", rule: "Balance solid, practical options with some surprising ones. Wildcards: about 1 in 6 cards." },
+  { name: "Inventive", desc: "Unusual angles first, with practical anchors.", rule: "Favour unusual, inventive angles but keep some practical anchors. Wildcards: about 1 in 4 cards." },
+  { name: "Wild",      desc: "Bold, unexpected cards. Expect lots of drops.", rule: "Go bold and unexpected, challenge assumptions; feasibility is secondary. Wildcards: about 1 in 3 cards." },
+];
+const KIND_GLYPH = { idea: "💡", question: "❓", wildcard: "🃏" };
+
+const S = {
+  phase: "calib",
+  cfg: { topic: "", type: "trip", output: "prompt", length: "c20", temp: 3 },
+  live: false, slots: [], deck: [], history: [], held: [],
+  swiped: 0, fetching: false, fetchErr: null, endAt: 0, timer: 0, uid: 0,
+  outText: "", outCtl: null,
+};
+const budget = () => S.cfg.length[0] === "c" ? +S.cfg.length.slice(1) : 0;
+const minutes = () => S.cfg.length[0] === "t" ? +S.cfg.length.slice(1) : 0;
+
+/* ---------- calibration UI ---------- */
+function syncChips() {
+  document.querySelectorAll("[data-group]").forEach(g => {
+    const key = g.dataset.group;
+    g.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", String(c.dataset.v === S.cfg[key])));
+  });
+}
+document.querySelectorAll("[data-group]").forEach(g => g.addEventListener("click", e => {
+  const c = e.target.closest(".chip"); if (!c) return;
+  S.cfg[g.dataset.group] = c.dataset.v; syncChips();
+}));
+document.querySelectorAll(".examples button").forEach(b => b.addEventListener("click", () => {
+  $("#topic").value = b.dataset.ex; S.cfg.type = b.dataset.type; syncChips();
+}));
+syncChips();
+function syncTemp() {
+  const t = TEMPS[S.cfg.temp];
+  $("#temp-name").textContent = t.name; $("#temp-desc").textContent = t.desc;
+  $("#temp").setAttribute("aria-valuetext", t.name);
+}
+$("#temp").addEventListener("input", e => { S.cfg.temp = Math.min(5, Math.max(1, +e.target.value || 3)); syncTemp(); });
+S.cfg.temp = +$("#temp").value || 3; syncTemp();
+
+$("#start").addEventListener("click", startSession);
+
+/* ---------- prompts ---------- */
+function langLine() { return "Write everything in the same language as the topic text."; }
+function cardShape() {
+  return '{"slot":"<slot id>","kind":"idea"|"question"|"wildcard","glyph":"<one emoji>","title":"<max 9 words>","detail":"<max 22 words>"}';
+}
+function cardRules() {
+  return [
+    "Card kinds: \"idea\" = one concrete, specific component or choice; \"question\" = a yes/no design decision phrased so that YES means keep it; \"wildcard\" = a bold, unexpected angle.",
+    `Creativity level: ${TEMPS[S.cfg.temp].rule}`,
+    "Glyph: exactly one emoji that depicts the card's subject at a glance, so the person can recognise the card later. Make glyphs distinct from each other; don't reuse one already used in this session.",
+    "Be specific, never vague (\"good UX\", \"have fun\" are useless). Each card stands alone.",
+  ].join("\n");
+}
+function sessionHeader() {
+  const c = S.cfg;
+  return `Topic: ${c.topic}\nWhat it is: ${TYPE_NAME[c.type]}\nFinal deliverable: ${OUT_NAME[c.output]}\nCreativity: ${TEMPS[c.temp].name} (${c.temp}/5)\n${langLine()}`;
+}
+function decisionsBlock() {
+  const by = v => S.history.filter(h => h.verdict === v).map(h => h.card);
+  const fmt = arr => arr.length ? arr.slice(-25).map(c => `- [${slotName(c.slot)}] ${c.title}`).join("\n") : "- (none)";
+  const slotLines = S.slots.map(s => `- ${s.id} "${s.name}": ${Math.round(fill(s) * 100)}% covered`).join("\n");
+  return `Slots and coverage:\n${slotLines}\n\nMUST-HAVES (swiped up):\n${fmt(by("lock"))}\n\nKEPT:\n${fmt(by("keep"))}\n\nDROPPED (avoid anything similar):\n${fmt(by("drop"))}\n\nPARKED FOR LATER:\n${fmt(S.held)}`;
+}
+function openingPrompt() {
+  return `You are running a swipe brainstorming session. The person swipes cards: right = keep, left = drop, up = must-have, down = decide later.\n\n${sessionHeader()}\n\nStep 1: define 4 to 6 slots: the parts a finished, usable ${OUT_NAME[S.cfg.output].toLowerCase()} for this needs (for an app, e.g. problem, target user, core loop, differentiator, tech, monetisation; for a trip, e.g. dates & pace, base, must-dos, food, budget). Each slot: id (short-kebab-case), name (1-3 words).\nStep 2: write 8 opening cards spread across the slots.\n${cardRules()}\n\nReply with only JSON: {"slots":[{"id":"","name":""}],"cards":[${cardShape()}]}`;
+}
+function batchPrompt(n) {
+  const all = S.history.map(h => h.card).concat(S.deck, S.held);
+  const existing = all.map(c => c.title).slice(-60);
+  const usedGlyphs = [...new Set(all.map(c => c.glyph))].join(" ");
+  return `You are dealing the next cards in a swipe brainstorming session (right = keep, left = drop, up = must-have, down = later).\n\n${sessionHeader()}\n\n${decisionsBlock()}\n\nWrite ${n} new cards.\n- Mostly target the least-covered slots.\n- Build on the must-haves: go deeper and more specific (variants, details, how to make them work).\n- Avoid anything resembling the dropped cards; read the drops as a signal of taste.\n- Don't repeat these titles: ${existing.join(" | ") || "(none)"}\n- Glyphs already used: ${usedGlyphs || "(none)"}\n${cardRules()}\n\nReply with only a JSON array of cards: [${cardShape()}]`;
+}
+function outputSpec() {
+  const names = S.slots.map(s => s.name).join(", ");
+  switch (S.cfg.output) {
+    case "brief": return `A one-page brief the person can act on: a # title, a two-sentence summary, one ## section per area (${names}), then ## Open questions and ## First three steps. Under 380 words.`;
+    case "plan": return `A step-by-step action plan: # title, a one-line goal, then ## phases (or days, for a trip or event) in time order, each with numbered concrete actions (when, and who where relevant), then ## Book or prepare first and ## Decisions still open. Under 450 words.`;
+    case "spec": return `A build spec: # title, ## Overview, ## Who it's for, ## Must-have features vs ## Nice-to-have, ## Structure and data (or logistics for a non-software topic), ## Approach and tools, ## Milestones, ## Risks. Under 550 words. For a non-software topic, make it an execution spec (schedule, resources, bookings, owners).`;
+    default: return `One self-contained prompt the person will paste into an AI assistant (such as Claude) to build or plan this. Address the assistant directly. State the goal, every must-have, the kept elements, constraints, what to avoid (from the drops), open questions to resolve, and exactly what output to produce. Put the whole prompt inside ONE fenced code block and write nothing outside it.`;
+  }
+}
+function outputPrompt() {
+  return `Turn this finished swipe-brainstorming session into the final deliverable.\n\n${sessionHeader()}\n\n${decisionsBlock()}\n\nMust-haves are non-negotiable. Kept items are wanted but flexible. Parked items are still undecided: list them as open questions. Never include dropped items.\n\nDeliverable: ${outputSpec()}\nUse Markdown. No preamble, no closing remarks.`;
+}
+function summaryPrompt() {
+  return `Summarise what came out of this swipe brainstorming session.\n\n${sessionHeader()}\n\n${decisionsBlock()}\n\nReply with only JSON:\n{"name":"<a 1-4 word name for the result>","summary":"<2-3 plain sentences: what the result is, its defining must-haves, and what is still open. No praise, no scoring.>"}`;
+}
+
+/* ---------- sample deck (no live AI) ---------- */
+const DEMO_SLOTS = [
+  { id: "pace", name: "Dates & pace" }, { id: "base", name: "Where to stay" },
+  { id: "do", name: "Must-dos" }, { id: "food", name: "Food & drink" }, { id: "budget", name: "Budget" },
+];
+const DEMO_CARDS = [
+  ["do","idea","🎄","Christmas markets at Spittelberg and Am Hof","The smaller, less touristy markets. Go after dark, when the lights are on."],
+  ["pace","idea","🗓️","Thursday evening to Sunday night","Three full days. Arrive after work Thursday, leave on the last train Sunday."],
+  ["base","idea","🏘️","Stay in Neubau, near MuseumsQuartier","Walkable to the centre, full of cafés and small shops, quieter at night."],
+  ["food","idea","☕","One long coffeehouse breakfast","Café Sperl or Prückel: slow morning, newspapers, a Melange and an egg dish."],
+  ["pace","question","😴","Keep every morning unplanned?","Nothing booked before 11. Trade sights for slow starts."],
+  ["do","idea","🎭","Standing tickets at the Staatsoper","Under €20, sold on the day. Leave at the interval if it's not your thing."],
+  ["budget","idea","🚆","Go by train, not car","Railjet from Budapest is under three hours. No parking stress in the centre."],
+  ["do","wildcard","🚋","Night tram ride on the full Ring loop","Tram 1 and 2 cover the Ring. Cheap sightseeing with a hot drink in hand."],
+  ["food","idea","🍷","Heuriger evening in Grinzing","A wine tavern on the city edge: young wine, cold cuts, slow conversation."],
+  ["base","question","🔑","Apartment instead of a hotel?","More space and a kitchen, but no breakfast and no front desk."],
+  ["do","question","🖼️","Book Klimt at the Belvedere in advance?","Timed tickets avoid the queue for The Kiss in December."],
+  ["budget","question","💶","Cap it at a mid-range budget?","Roughly €150 a night for the stay, one splurge dinner, the rest casual."],
+  ["food","question","🍽️","One tasting-menu dinner?","A single splurge night, booked weeks ahead."],
+  ["do","idea","♨️","Afternoon at Therme Wien","Thermal pools and saunas on a cold day, 20 minutes by U-Bahn."],
+  ["base","idea","🧖","Hotel with a rooftop sauna","Warm up after markets with a view over the roofs."],
+  ["budget","idea","🎫","Wiener Linien 72-hour pass","Unlimited trams and U-Bahn. Pays off after about eight rides."],
+  ["pace","wildcard","🇸🇰","Day trip to Bratislava by train","One hour away. A different capital and its own Christmas market."],
+  ["food","idea","🥩","Schnitzel lunch in a traditional Beisl","Plachutta or Figlmüller for lunch, when it's easier to get a table."],
+];
+
+/* ---------- session ---------- */
+function mkCard(o) {
+  const kind = ["idea","question","wildcard"].includes(o.kind) ? o.kind : "idea";
+  const g = Array.from(String(o.glyph || "").trim()).slice(0, 6).join("");
+  return { id: ++S.uid, slot: String(o.slot || ""), kind, glyph: g || KIND_GLYPH[kind],
+    title: String(o.title || "").trim().slice(0, 120), detail: String(o.detail || "").trim().slice(0, 260) };
+}
+function slotName(id) { const s = S.slots.find(x => x.id === id); return s ? s.name : "Wildcard"; }
+function slotScore(s) {
+  return S.history.reduce((a, h) => a + (h.card.slot === s.id ? POINTS[h.verdict] : 0), 0);
+}
+function fill(s) { return Math.min(1, slotScore(s) / TARGET); }
+function goal() { return S.slots.length ? S.slots.reduce((a, s) => a + fill(s), 0) / S.slots.length : 0; }
+
+async function startSession() {
+  const topic = $("#topic").value.trim();
+  if (!topic) { $("#topic").focus(); return; }
+  Object.assign(S, { cfg: { ...S.cfg, topic }, slots: [], deck: [], history: [], held: [], swiped: 0, fetching: false, fetchErr: null, phase: "swipe" });
+  $("#start").disabled = true; $("#start").textContent = "Starting…";
+  await aiReady;
+  $("#start").disabled = false; $("#start").textContent = "Deal the cards";
+  if (AI.mode === "byok" && AI.provider !== "sample" && !aiLive()) {
+    S.phase = "calib";
+    $("#key-note").innerHTML = `<span class="err">Paste your ${esc(P_name(AI.provider))} key, or pick “No key: sample deck”.</span>`;
+    $("#api-key").focus(); return;
+  }
+  S.live = aiLive();
+  show("swipe");
+  if (minutes()) { S.endAt = Date.now() + minutes() * 60000; clearInterval(S.timer); S.timer = setInterval(tick, 1000); }
+  if (!S.live) { loadDemo(); return; }
+  S.fetching = true; render();
+  try {
+    const res = await aiJson(openingPrompt());
+    const slots = (res && Array.isArray(res.slots) ? res.slots : []).filter(s => s && s.id && s.name).slice(0, 6)
+      .map(s => ({ id: String(s.id), name: String(s.name).slice(0, 28) }));
+    if (slots.length < 2) throw { code: "invalid_json" };
+    S.slots = slots;
+    S.deck = dedupe((res.cards || []).map(mkCard).filter(c => c.title));
+  } catch (e) { S.fetchErr = e && e.code || "upstream_error"; }
+  S.fetching = false; render(); ensureDeck();
+}
+function loadDemo() {
+  S.live = false; S.fetchErr = null; S.fetching = false;
+  if (!S.slots.length) S.slots = DEMO_SLOTS.map(s => ({ ...s }));
+  S.deck = DEMO_CARDS.map(([slot, kind, glyph, title, detail]) => mkCard({ slot, kind, glyph, title, detail }));
+  render();
+}
+function dedupe(cards) {
+  const seen = new Set(S.history.map(h => h.card.title.toLowerCase()).concat(S.deck.map(c => c.title.toLowerCase())));
+  return cards.filter(c => { const k = c.title.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
+}
+async function ensureDeck() {
+  if (!S.live || S.phase !== "swipe" || S.fetching || S.fetchErr) return;
+  if (S.deck.length > 3) return;
+  let n = 6;
+  if (budget()) n = Math.min(n, budget() - S.swiped - S.deck.length);
+  if (n <= 0) return;
+  S.fetching = true; render();
+  try {
+    const arr = await aiJson(batchPrompt(n));
+    const list = Array.isArray(arr) ? arr : (arr && Array.isArray(arr.cards) ? arr.cards : []);
+    S.deck.push(...dedupe(list.map(mkCard).filter(c => c.title)));
+  } catch (e) { S.fetchErr = e && e.code || "upstream_error"; }
+  S.fetching = false;
+  if (S.phase === "swipe") render();
+}
+
+function decide(dir) {
+  const card = S.deck[0]; if (!card) return;
+  const review = S.phase === "review";
+  const verdict = VERDICT[dir];
+  if (review && verdict === "hold") return;
+  S.deck.shift();
+  if (review) S.held = S.held.filter(c => c.id !== card.id);
+  if (verdict === "hold") S.held.push(card);
+  else S.history.push({ card, verdict, review });
+  if (!review) { S.swiped++; S.lastFirst = { card, verdict }; }
+  else S.lastFirst = null;
+  render();
+  if (review) { if (!S.deck.length) generate(); return; }
+  if (budget() && S.swiped >= budget()) { finishSwiping(); return; }
+  ensureDeck();
+}
+function undo() {
+  const last = S.lastFirst; if (!last || S.phase !== "swipe") return;
+  if (last.verdict === "hold") S.held = S.held.filter(c => c.id !== last.card.id);
+  else { const i = S.history.findIndex(h => h.card.id === last.card.id); if (i > -1) S.history.splice(i, 1); }
+  S.deck.unshift(last.card); S.swiped--; S.lastFirst = null; render();
+}
+function finishSwiping() {
+  clearInterval(S.timer);
+  if (S.held.length) { S.phase = "review"; S.deck = S.held.slice(); render(); }
+  else generate();
+}
+function tick() {
+  if (S.phase !== "swipe") { clearInterval(S.timer); return; }
+  if (Date.now() >= S.endAt) { finishSwiping(); return; }
+  renderCounter();
+}
+
+/* ---------- swipe screen render ---------- */
+function show(name) {
+  ["calib","swipe","result"].forEach(n => $("#scr-" + n).hidden = n !== name);
+}
+function renderCounter() {
+  let t;
+  if (S.phase === "review") t = `${S.deck.length} left`;
+  else if (minutes()) { const ms = Math.max(0, S.endAt - Date.now()); const m = Math.floor(ms / 60000), s = Math.floor(ms / 1000) % 60; t = `${m}:${String(s).padStart(2,"0")} left`; }
+  else t = `Card ${Math.min(S.swiped + 1, budget())} / ${budget()}`;
+  $("#counter").textContent = t;
+}
+function render() {
+  if (S.phase !== "swipe" && S.phase !== "review") return;
+  const review = S.phase === "review";
+  $("#mode-badge").textContent = !S.live ? "Sample deck" : AI.mode === "claude" ? "Your Claude" : P_name(AI.provider);
+  $("#mode-badge").classList.toggle("live", S.live);
+  renderCounter();
+  const g = Math.round(goal() * 100);
+  $("#goal-fill").style.width = g + "%";
+  $("#goal-pct").textContent = g + "%";
+  $("#goal-bar").setAttribute("aria-valuenow", g);
+  $("#finish").classList.toggle("ready", g >= 100);
+  $("#finish").textContent = review ? "Skip to result" : "Finish";
+  $("#slots").innerHTML = S.slots.map(s => {
+    const pts = slotScore(s), lockPts = S.history.filter(h => h.card.slot === s.id && h.verdict === "lock").length * 2;
+    const pips = Array.from({ length: TARGET }, (_, i) => `<i class="pip ${i < Math.min(pts, TARGET) ? (i < lockPts ? "on lock" : "on") : ""}"></i>`).join("");
+    return `<span class="slot ${pts >= TARGET ? "full" : ""}">${esc(s.name)}<span class="pips" aria-label="${Math.min(pts, TARGET)} of ${TARGET}">${pips}</span></span>`;
+  }).join("");
+  const banner = $("#banner");
+  if (review) { banner.hidden = false; banner.innerHTML = `Decide the cards you parked for <b>later</b>. Keep, drop or make them must-haves.`; }
+  else if (g >= 100) { banner.hidden = false; banner.textContent = "Every part is covered. Finish now, or keep swiping to sharpen it."; }
+  else banner.hidden = true;
+  document.querySelector('.ctl.hold').disabled = review;
+  $("#undo").disabled = !S.lastFirst || review;
+  renderStack();
+}
+function renderStack() {
+  const stack = $("#stack");
+  stack.innerHTML = "";
+  const review = S.phase === "review";
+  const top3 = S.deck.slice(0, 3);
+  const ctlOn = top3.length > 0;
+  document.querySelectorAll(".ctl").forEach(b => { if (!(b.classList.contains("hold") && review)) b.disabled = !ctlOn; });
+  if (!top3.length) { stack.appendChild(placeholder()); return; }
+  for (let i = top3.length - 1; i >= 0; i--) {
+    const el = cardEl(top3[i]);
+    el.classList.add(i === 0 ? "top" : i === 1 ? "back1" : "back2");
+    if (i > 0) el.setAttribute("aria-hidden", "true");
+    stack.appendChild(el);
+    if (i === 0) bindDrag(el);
+  }
+}
+function cardEl(c) {
+  const el = document.createElement("article");
+  el.className = "card";
+  el.innerHTML = `
+    <header class="card-head"><span class="slot-tag">${esc(slotName(c.slot))}</span><span class="kind ${c.kind}">${c.kind === "question" ? "Question" : c.kind === "wildcard" ? "Wildcard" : "Idea"}</span></header>
+    <div class="card-body"><span class="glyph" aria-hidden="true">${esc(c.glyph)}</span><h2 class="card-title">${esc(c.title)}</h2><p class="card-detail">${esc(c.detail)}</p></div>
+    <footer class="card-foot"><span class="hint">${c.kind === "question" ? "Right = yes · Left = no" : "Swipe or use the buttons"}</span><button class="edit-btn" type="button">Edit</button></footer>
+    <span class="stamp right">Keep</span><span class="stamp left">Drop</span><span class="stamp up">Must</span><span class="stamp down">Later</span>`;
+  el.querySelector(".edit-btn").addEventListener("click", () => startEdit(el, c));
+  return el;
+}
+function startEdit(el, c) {
+  const body = el.querySelector(".card-body");
+  body.innerHTML = `<span class="glyph" aria-hidden="true">${esc(c.glyph)}</span><label class="label" for="edit-title">Rewrite this card</label><textarea id="edit-title" class="edit-area" rows="3">${esc(c.title)}</textarea>`;
+  const btn = el.querySelector(".edit-btn");
+  btn.textContent = "Save";
+  const ta = body.querySelector("textarea"); ta.focus();
+  btn.onclick = () => { const v = ta.value.trim(); if (v) { c.title = v.slice(0, 120); c.detail = c.detail ? "Edited by you. " + c.detail : "Edited by you."; } renderStack(); };
+}
+function placeholder() {
+  const el = document.createElement("div");
+  el.className = "card placeholder";
+  if (S.fetching) {
+    el.innerHTML = `<div class="dealing" aria-hidden="true"><i></i><i></i><i></i></div><p><b>Dealing cards…</b><br>Claude is reading your swipes and writing the next ones.</p>`;
+  } else if (S.fetchErr) {
+    const msg = ERR[S.fetchErr] || ERR.upstream_error;
+    el.innerHTML = `<p class="err">${esc(msg)}</p><div class="btn-row"><button class="ghost" type="button" data-a="retry">Try again</button><button class="ghost" type="button" data-a="finish">Finish now</button></div>${S.history.length ? "" : `<button class="ghost" type="button" data-a="demo">Use the sample deck</button>`}`;
+    el.addEventListener("click", e => {
+      const a = e.target.closest("button")?.dataset.a; if (!a) return;
+      if (a === "retry") { S.fetchErr = null; if (!S.slots.length) startSession(); else ensureDeck(); }
+      if (a === "finish") finishSwiping();
+      if (a === "demo") loadDemo();
+    });
+  } else {
+    el.innerHTML = `<p>That's the whole deck.</p><button class="primary" type="button">Write my ${esc(OUT_NAME[S.cfg.output].toLowerCase())}</button>`;
+    el.querySelector("button").addEventListener("click", finishSwiping);
+  }
+  return el;
+}
+const ERR = {
+  not_granted: "Claude wasn't allowed for this page. Allow it from the artifact's permissions, or use the sample deck.",
+  no_key: "No API key set. Go back and paste one, or use the sample deck.",
+  bad_key: "The API key was rejected. Check it and paste it again.",
+  no_credit: "Your account is out of credit. Top it up, then try again.",
+  bad_model: "That model name wasn't recognised. Pick another one in the settings.",
+  bad_request: "The AI service rejected the request. Check the model names in the settings.",
+  network: "Couldn't reach the AI service. Check your connection; some networks and browser extensions block it.",
+  empty_completion: "The AI returned nothing. Try again.",
+  sampling_disabled: "Claude isn't available for this account here.",
+  rate_limited: "Too many requests just now. Wait a moment, then try again.",
+  invalid_json: "The cards came back garbled. Try again.",
+  session_expired: "You've been signed out. Sign in again, then try again.",
+  refused: "Claude declined this topic. Rephrase it and start a new session.",
+  upstream_error: "Couldn't reach Claude. Check your connection and try again.",
+};
+
+/* ---------- gestures ---------- */
+function dirOf(dx, dy, final) {
+  const T = final ? 90 : 18;
+  if (Math.abs(dx) >= Math.abs(dy)) { if (dx > T) return "right"; if (dx < -T) return "left"; }
+  else { if (dy < -T) return "up"; if (dy > T) return "down"; }
+  return null;
+}
+function allowed(dir) { return !(S.phase === "review" && dir === "down"); }
+function bindDrag(el) {
+  let sx = 0, sy = 0, dx = 0, dy = 0, on = false;
+  el.addEventListener("pointerdown", e => {
+    if (e.target.closest("button,textarea")) return;
+    on = true; sx = e.clientX; sy = e.clientY; dx = dy = 0;
+    el.setPointerCapture(e.pointerId); el.style.transition = "none";
+  });
+  el.addEventListener("pointermove", e => {
+    if (!on) return;
+    dx = e.clientX - sx; dy = e.clientY - sy;
+    el.style.transform = `translate(${dx}px,${dy}px) rotate(${dx * 0.05}deg)`;
+    const d = dirOf(dx, dy, false);
+    if (d && allowed(d)) { el.dataset.dir = d; el.style.setProperty("--s", Math.min(1, Math.hypot(dx, dy) / 110).toFixed(2)); }
+    else delete el.dataset.dir;
+  });
+  const end = () => {
+    if (!on) return; on = false;
+    const d = dirOf(dx, dy, true);
+    if (d && allowed(d)) fly(el, d);
+    else { el.style.transition = ""; el.style.transform = ""; delete el.dataset.dir; }
+  };
+  el.addEventListener("pointerup", end);
+  el.addEventListener("pointercancel", end);
+}
+let flying = false;
+function fly(el, dir) {
+  if (flying) return; flying = true;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const W = innerWidth, H = innerHeight;
+  const to = { right: [W, 40, 22], left: [-W, 40, -22], up: [0, -H, 0], down: [0, H, 0] }[dir];
+  el.dataset.dir = dir; el.style.setProperty("--s", 1);
+  el.style.transition = reduce ? "opacity .12s" : "transform .3s ease-in, opacity .3s ease-in";
+  if (!reduce) el.style.transform = `translate(${to[0]}px,${to[1]}px) rotate(${to[2]}deg)`;
+  el.style.opacity = "0";
+  setTimeout(() => { flying = false; decide(dir); }, reduce ? 120 : 280);
+}
+document.querySelectorAll(".ctl").forEach(b => b.addEventListener("click", () => {
+  const el = $("#stack .card.top"); if (el && allowed(b.dataset.dir)) fly(el, b.dataset.dir);
+}));
+document.addEventListener("keydown", e => {
+  if (S.phase !== "swipe" && S.phase !== "review") return;
+  if (e.target.closest && e.target.closest("textarea")) return;
+  const d = { ArrowRight: "right", ArrowLeft: "left", ArrowUp: "up", ArrowDown: "down" }[e.key];
+  const el = $("#stack .card.top");
+  if (d && el && allowed(d)) { e.preventDefault(); fly(el, d); }
+});
+$("#undo").addEventListener("click", undo);
+$("#finish").addEventListener("click", () => S.phase === "review" ? generate() : finishSwiping());
+
+/* ---------- result ---------- */
+function md(src) {
+  const inline = s => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/(^|[^*])\*([^*\s][^*]*)\*/g, "$1<em>$2</em>");
+  let out = "", list = null, para = [], code = null;
+  const fp = () => { if (para.length) { out += "<p>" + inline(para.join(" ")) + "</p>"; para = []; } };
+  const fl = () => { if (list) { out += `</${list}>`; list = null; } };
+  const cb = lines => `<div class="codeblock"><pre><code>${esc(lines.join("\n"))}</code></pre></div>`;
+  for (const raw of src.split("\n")) {
+    if (code) { if (/^\s*```/.test(raw)) { out += cb(code); code = null; } else code.push(raw); continue; }
+    const l = raw.trimEnd(); let m;
+    if (/^\s*```/.test(l)) { fp(); fl(); code = []; continue; }
+    if ((m = l.match(/^(#{1,3})\s+(.*)/))) { fp(); fl(); const n = m[1].length + 1; out += `<h${n}>${inline(m[2])}</h${n}>`; continue; }
+    if ((m = l.match(/^\s*[-*•]\s+(.*)/))) { fp(); if (list !== "ul") { fl(); out += "<ul>"; list = "ul"; } out += "<li>" + inline(m[1]) + "</li>"; continue; }
+    if ((m = l.match(/^\s*\d+[.)]\s+(.*)/))) { fp(); if (list !== "ol") { fl(); out += "<ol>"; list = "ol"; } out += "<li>" + inline(m[1]) + "</li>"; continue; }
+    if (!l.trim()) { fp(); fl(); continue; }
+    fl(); para.push(l.trim());
+  }
+  if (code) out += cb(code);
+  fp(); fl(); return out;
+}
+function copyText() {
+  const t = S.outText;
+  if (S.cfg.output === "prompt") { const m = t.match(/```[^\n]*\n([\s\S]*?)(```|$)/); if (m) return m[1].trim(); }
+  return t.trim();
+}
+$("#copy").addEventListener("click", () => {
+  const btn = $("#copy");
+  const done = ok => { btn.textContent = ok ? "Copied" : "Select and copy"; setTimeout(() => btn.textContent = "Copy", 1800); };
+  const fallback = () => { const r = document.createRange(); r.selectNodeContents($("#output")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); done(false); };
+  try { navigator.clipboard.writeText(copyText()).then(() => done(true), fallback); } catch { fallback(); }
+});
+$("#regen").addEventListener("click", () => writeOutput());
+$("#again").addEventListener("click", () => {
+  if (S.outCtl) S.outCtl.abort();
+  S.phase = "calib"; show("calib");
+});
+
+function renderDecks() {
+  const group = (v, label) => {
+    const items = v === "hold" ? S.held : S.history.filter(h => h.verdict === v).map(h => h.card);
+    if (!items.length) return "";
+    return `<details><summary>${label} (${items.length})</summary><ul>${items.map(c => `<li><span class="g-sm" aria-hidden="true">${esc(c.glyph)}</span><span>${esc(c.title)} <span class="note">· ${esc(slotName(c.slot))}</span></span></li>`).join("")}</ul></details>`;
+  };
+  const html = group("lock", "⭐ Must-haves") + group("keep", "✓ Kept") + group("hold", "⏳ Still undecided") + group("drop", "✕ Dropped");
+  $("#decks").innerHTML = html || `<p class="note">No cards swiped.</p>`;
+}
+
+function generate() {
+  clearInterval(S.timer);
+  S.phase = "result"; show("result");
+  $("#res-kind").textContent = OUT_NAME[S.cfg.output];
+  $("#res-name").textContent = TYPE_NAME[S.cfg.type] + " session";
+  renderDecks();
+  if (S.live) {
+    $("#res-summary").textContent = "Summarising…";
+    aiJson(summaryPrompt()).then(r => {
+      if (r && r.name) $("#res-name").textContent = String(r.name).slice(0, 60);
+      $("#res-summary").textContent = r && r.summary ? String(r.summary) : demoSummary();
+    }).catch(() => { $("#res-summary").textContent = demoSummary(); });
+  } else {
+    $("#res-name").textContent = "Vienna, slowly";
+    $("#res-summary").textContent = demoSummary();
+  }
+  writeOutput();
+}
+function demoSummary() {
+  const L = titles("lock"), K = titles("keep"), H = titles("hold");
+  const parts = [`${S.cfg.topic}.`];
+  parts.push(L.length ? `Built around ${L.slice(0, 3).join(", ").toLowerCase()}${L.length > 3 ? " and more" : ""}.` : `${K.length} kept ideas, no must-haves yet.`);
+  parts.push(H.length ? `${H.length} card${H.length > 1 ? "s are" : " is"} still undecided.` : "Nothing left undecided.");
+  return parts.join(" ");
+}
+async function writeOutput() {
+  const status = $("#out-status"), out = $("#output");
+  $("#copy").disabled = true; $("#regen").disabled = true;
+  if (!S.live) { S.outText = demoOutput(); out.innerHTML = md(S.outText); status.textContent = "Sample output"; $("#copy").disabled = false; return; }
+  if (S.outCtl) S.outCtl.abort();
+  const ctl = S.outCtl = new AbortController();
+  const t0 = Date.now(); let streaming = false;
+  clearInterval(S.outTimer);
+  const tickOut = () => { if (!streaming) status.textContent = `Thinking… ${Math.round((Date.now() - t0) / 1000)} s`; };
+  tickOut(); S.outTimer = setInterval(tickOut, 1000);
+  out.innerHTML = `<p class="note">Claude is writing your ${esc(OUT_NAME[S.cfg.output].toLowerCase())}. This usually takes 10 to 60 seconds. Keep this screen open.</p>`;
+  let text = "", truncated = false;
+  try {
+    ({ text, truncated } = await aiText(outputPrompt(), {
+      signal: ctl.signal, tier: "default",
+      onText: u => {
+        if (ctl !== S.outCtl) return;
+        streaming = true; status.textContent = "Writing…";
+        S.outText = u.text; out.innerHTML = md(u.text);
+      },
+    }));
+  } catch (e) {
+    if (ctl !== S.outCtl) return;
+    clearInterval(S.outTimer);
+    const code = (e && e.code) || "upstream_error";
+    if (code === "cancelled") return;
+    const partial = (e && e.text) || "";
+    if (partial.trim().length > 200) {
+      S.outText = partial;
+      out.innerHTML = md(partial) + `<p class="err">This was cut off: ${esc(ERR[code] || ERR.upstream_error)} <span class="note">(${esc(code)})</span></p>`;
+      status.textContent = "Cut off";
+    } else {
+      S.outText = localOutput();
+      out.innerHTML = `<p class="err">${esc(ERR[code] || ERR.upstream_error)} <span class="note">(${esc(code)})</span></p><p class="note">Below is a version built from your cards. Tap “Write it again” for Claude's full version.</p>` + md(S.outText);
+      status.textContent = "Built from your cards";
+    }
+    $("#copy").disabled = false; $("#regen").disabled = false;
+    return;
+  }
+  if (ctl !== S.outCtl) return;
+  clearInterval(S.outTimer);
+  S.outText = text; out.innerHTML = md(text);
+  status.textContent = truncated ? "Cut short" : OUT_NAME[S.cfg.output];
+  $("#copy").disabled = !S.outText; $("#regen").disabled = false;
+}
+
+/* ---------- output built from the cards (fallback when Claude fails) ---------- */
+const NEXT_ASK = {
+  app: "Turn this into a build plan and then a first working prototype. Ask me up to three questions first if anything critical is unclear.",
+  trip: "Produce a day-by-day itinerary with times, transport between stops, what to book in advance and rough costs.",
+  event: "Produce a plan with a timeline, the guest experience, a shopping list and who does what.",
+  business: "Produce a one-page business plan: offer, customer, pricing, channels and the first 30 days.",
+  other: "Produce a concrete plan I can start on this week.",
+};
+function localOutput() {
+  const L = titles("lock"), K = titles("keep"), H = titles("hold"), D = titles("drop");
+  const li = a => a.length ? a.map(t => "- " + t).join("\n") : "- (none)";
+  const bySlot = (fmt) => S.slots.map(s => {
+    const items = S.history.filter(h => h.card.slot === s.id && h.verdict !== "drop")
+      .map(h => h.card.title + (h.verdict === "lock" ? " **(must-have)**" : ""));
+    return `## ${s.name}\n${items.length ? items.map(fmt).join("\n") : "- Not decided yet"}`;
+  }).join("\n\n");
+  const topic = S.cfg.topic;
+  switch (S.cfg.output) {
+    case "prompt":
+      return "```\n" + `Help me with this ${TYPE_NAME[S.cfg.type].toLowerCase()}: ${topic}\n\nMust-haves (non-negotiable):\n${li(L)}\n\nWanted, but flexible:\n${li(K)}\n\nStill undecided, help me choose:\n${li(H)}\n\nAvoid:\n${li(D)}\n\n${NEXT_ASK[S.cfg.type]}\n` + "```";
+    case "plan":
+      return `# Plan: ${topic}\n\n${bySlot((t, i) => `${i + 1}. ${t}`)}\n\n## Decisions still open\n${li(H)}`;
+    case "spec":
+      return `# Spec: ${topic}\n\n## Must-haves\n${li(L)}\n\n## Nice-to-haves\n${li(K)}\n\n${bySlot(t => "- " + t)}\n\n## Out of scope\n${li(D)}\n\n## Open questions\n${li(H)}`;
+    default:
+      return `# ${topic}\n\n${demoSummary()}\n\n${bySlot(t => "- " + t)}\n\n## Open questions\n${li(H)}`;
+  }
+}
+
+/* ---------- sample output ---------- */
+function titles(v) { return (v === "hold" ? S.held : S.history.filter(h => h.verdict === v).map(h => h.card)).map(c => c.title); }
+function demoOutput() {
+  const L = titles("lock"), K = titles("keep"), H = titles("hold"), D = titles("drop");
+  const li = a => a.length ? a.map(t => "- " + t).join("\n") : "- (none yet)";
+  const per = S.slots.map(s => {
+    const items = S.history.filter(h => h.card.slot === s.id && (h.verdict === "keep" || h.verdict === "lock"))
+      .map(h => "- " + h.card.title + (h.verdict === "lock" ? " **(must-have)**" : ""));
+    return `## ${s.name}\n${items.length ? items.join("\n") : "- Not decided yet"}`;
+  }).join("\n\n");
+  if (S.cfg.output === "prompt") {
+    return "```\nPlan a long weekend in Vienna for two in early December.\n\nMust-haves (non-negotiable):\n" + li(L) + "\n\nWanted, but flexible:\n" + li(K) +
+      "\n\nStill undecided, help me choose:\n" + li(H) + "\n\nAvoid:\n" + li(D) +
+      "\n\nProduce a day-by-day itinerary (Thursday evening to Sunday night) with times, transport between stops, what to book in advance and rough costs per person. Keep the pace relaxed.\n```";
+  }
+  if (S.cfg.output === "plan") {
+    const pick = slot => S.history.filter(h => h.card.slot === slot && h.verdict !== "drop").map(h => h.card.title);
+    const n = a => a.length ? a.map((t, i) => `${i + 1}. ${t}`).join("\n") : "1. Nothing chosen yet";
+    return `# Vienna weekend plan\n\nGoal: a relaxed long weekend for two in early December.\n\n## Now: book\n${n(pick("pace").concat(pick("base"), pick("budget")))}\n\n## Thursday evening\n1. Train in, check in, short walk to the nearest market.\n\n## Friday and Saturday\n${n(pick("do").concat(pick("food")))}\n\n## Sunday\n1. Slow breakfast, last market, evening train home.\n\n## Decisions still open\n${li(H)}`;
+  }
+  if (S.cfg.output === "spec") {
+    return `# Vienna weekend: execution plan\n\n## Overview\nA relaxed long weekend for two built around December atmosphere.\n\n## Must-haves\n${li(L)}\n\n## Nice-to-haves\n${li(K)}\n\n${per}\n\n## Bookings to make\n- Train tickets\n- Accommodation\n- Anything timed among the must-haves\n\n## Risks\n- Markets get crowded on Saturday evening\n- Popular restaurants book out weeks ahead\n\n## Open questions\n${li(H)}`;
+  }
+  return `# Vienna, slowly\n\nA long weekend for two in early December. The plan keeps what you swiped up as fixed and treats the rest as options.\n\n${per}\n\n## Open questions\n${li(H)}\n\n## First three steps\n1. Book the train and the stay.\n2. Reserve anything timed among the must-haves.\n3. Pin the rest on a shared map.`;
+}
+})();
+</script>
+
+</body>
+</html>
