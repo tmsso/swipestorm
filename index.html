@@ -153,6 +153,12 @@ textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid v
 .undo{background:none;border:0;font-size:13px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
 .undo:disabled{opacity:.4;text-decoration:none;cursor:default}
 
+/* ---------- Language toggle ---------- */
+.brand-side{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:0 0 auto}
+.lang{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.lang button{background:none;border:0;padding:2px 7px;font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;color:var(--muted)}
+.lang button[aria-pressed="true"]{background:var(--desk-2);color:var(--ink)}
+
 /* ---------- AI connection ---------- */
 .ai-box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px}
 .ai-box input[type=password],.ai-box input[type=text]{font:inherit;font-size:15px;color:var(--ink);background:var(--desk);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%;min-width:0}
@@ -214,78 +220,82 @@ textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid v
   <!-- Calibration -->
   <section class="screen calib" id="scr-calib">
     <div>
-      <div class="brand"><h1>Swipe<span>storm</span></h1><span class="badge" id="live-badge">Checking…</span></div>
-      <p class="lede">Tell it what you're ideating. Swipe the cards it deals. Get a finished brief, spec or handoff prompt.</p>
+      <div class="brand">
+        <h1>Swipe<span>storm</span></h1>
+        <div class="brand-side">
+          <div class="lang" role="group" aria-label="Language / Nyelv" id="lang-toggle">
+            <button type="button" data-lang="en" lang="en">EN</button><button type="button" data-lang="hu" lang="hu">HU</button>
+          </div>
+          <span class="badge" id="live-badge" data-i18n="checking">Checking…</span>
+        </div>
+      </div>
+      <p class="lede" data-i18n="lede">Tell it what you're ideating. Swipe the cards it deals. Get a finished brief, plan, spec or handoff prompt.</p>
     </div>
 
     <div class="field">
-      <label class="label" for="topic">What are we ideating?</label>
+      <label class="label" for="topic" data-i18n="topicLabel">What are we ideating?</label>
       <textarea id="topic" rows="3">A long weekend in Vienna for two, early December</textarea>
-      <div class="examples" aria-label="Examples">
-        <button type="button" data-ex="An app that turns family dinners into a weekly tradition" data-type="app">App: family dinners</button>
-        <button type="button" data-ex="A 40th birthday party for my wife at home, about 25 guests" data-type="event">Event: 40th birthday</button>
-        <button type="button" data-ex="A side business selling custom crossword puzzles" data-type="business">Business: crosswords</button>
-      </div>
+      <div class="examples" id="examples" aria-label="Examples"></div>
     </div>
 
     <div class="field">
-      <span class="label" id="lbl-type">It's a…</span>
+      <span class="label" id="lbl-type" data-i18n="typeLabel">It's a…</span>
       <div class="chips" role="group" aria-labelledby="lbl-type" data-group="type">
-        <button type="button" class="chip" data-v="app">App</button>
-        <button type="button" class="chip" data-v="trip">Trip</button>
-        <button type="button" class="chip" data-v="event">Event</button>
-        <button type="button" class="chip" data-v="business">Business</button>
-        <button type="button" class="chip" data-v="other">Something else</button>
+        <button type="button" class="chip" data-v="app" data-i18n="type_app">App</button>
+        <button type="button" class="chip" data-v="trip" data-i18n="type_trip">Trip</button>
+        <button type="button" class="chip" data-v="event" data-i18n="type_event">Event</button>
+        <button type="button" class="chip" data-v="business" data-i18n="type_business">Business</button>
+        <button type="button" class="chip" data-v="other" data-i18n="type_other">Something else</button>
       </div>
     </div>
 
     <div class="field">
-      <span class="label" id="lbl-out">At the end I want…</span>
+      <span class="label" id="lbl-out" data-i18n="outLabel">At the end I want…</span>
       <div class="chips" role="group" aria-labelledby="lbl-out" data-group="output">
-        <button type="button" class="chip" data-v="brief">Brief<small>one page to act on</small></button>
-        <button type="button" class="chip" data-v="plan">Plan<small>steps, timeline, to-dos</small></button>
-        <button type="button" class="chip" data-v="spec">Build spec<small>features, structure, risks</small></button>
-        <button type="button" class="chip" data-v="prompt">Handoff prompt<small>paste into Claude</small></button>
+        <button type="button" class="chip" data-v="brief" data-i18n-html="out_brief">Brief<small>one page to act on</small></button>
+        <button type="button" class="chip" data-v="plan" data-i18n-html="out_plan">Plan<small>steps, timeline, to-dos</small></button>
+        <button type="button" class="chip" data-v="spec" data-i18n-html="out_spec">Build spec<small>features, structure, risks</small></button>
+        <button type="button" class="chip" data-v="prompt" data-i18n-html="out_prompt">Handoff prompt<small>paste into Claude</small></button>
       </div>
     </div>
 
     <div class="field">
-      <label class="label" for="temp">Practical or creative?</label>
+      <label class="label" for="temp" data-i18n="tempLabel">Practical or creative?</label>
       <input type="range" id="temp" min="1" max="5" step="1" value="3" aria-describedby="temp-desc">
-      <div class="temp-scale"><span>Practical</span><b id="temp-name">Balanced</b><span>Creative</span></div>
+      <div class="temp-scale"><span data-i18n="tempLow">Practical</span><b id="temp-name">Balanced</b><span data-i18n="tempHigh">Creative</span></div>
       <p class="note" id="temp-desc">A mix of solid picks and some surprises.</p>
     </div>
 
     <div class="field">
-      <span class="label" id="lbl-len">Session length</span>
+      <span class="label" id="lbl-len" data-i18n="lenLabel">Session length</span>
       <div class="chips" role="group" aria-labelledby="lbl-len" data-group="length">
-        <button type="button" class="chip" data-v="c12">12 cards</button>
-        <button type="button" class="chip" data-v="c20">20 cards</button>
-        <button type="button" class="chip" data-v="c30">30 cards</button>
-        <button type="button" class="chip" data-v="t3">3 min</button>
-        <button type="button" class="chip" data-v="t5">5 min</button>
+        <button type="button" class="chip" data-v="c12" data-i18n="len_c12">12 cards</button>
+        <button type="button" class="chip" data-v="c20" data-i18n="len_c20">20 cards</button>
+        <button type="button" class="chip" data-v="c30" data-i18n="len_c30">30 cards</button>
+        <button type="button" class="chip" data-v="t3" data-i18n="len_t3">3 min</button>
+        <button type="button" class="chip" data-v="t5" data-i18n="len_t5">5 min</button>
       </div>
     </div>
 
-    <div class="legend" aria-label="Swipe directions">
-      <div class="lg lg-up"><b>Must-have</b>locks it in</div>
-      <div class="lg lg-left"><b>Drop</b>never again</div>
+    <div class="legend" data-i18n-aria="legendAria" aria-label="Swipe directions">
+      <div class="lg lg-up" data-i18n-html="lg_up"><b>Must-have</b>locks it in</div>
+      <div class="lg lg-left" data-i18n-html="lg_left"><b>Drop</b>never again</div>
       <div class="mini" aria-hidden="true"></div>
-      <div class="lg lg-right"><b>Keep</b>good one</div>
-      <div class="lg lg-down"><b>Later</b>decide at the end</div>
+      <div class="lg lg-right" data-i18n-html="lg_right"><b>Keep</b>good one</div>
+      <div class="lg lg-down" data-i18n-html="lg_down"><b>Later</b>decide at the end</div>
     </div>
 
     <div class="field">
-      <span class="label" id="lbl-ai">AI connection</span>
-      <div class="ai-box" id="ai-checking"><span class="note">Checking where this page is running…</span></div>
+      <span class="label" id="lbl-ai" data-i18n="aiLabel">AI connection</span>
+      <div class="ai-box" id="ai-checking"><span class="note" data-i18n="aiChecking">Checking where this page is running…</span></div>
       <div class="ai-box" id="ai-claude" hidden>
-        <span><b>Using your Claude account.</b> This page is running inside Claude, so the cards come from your own Claude plan. No key needed.</span>
+        <span data-i18n-html="aiClaude"><b>Using your Claude account.</b> This page is running inside Claude, so the cards come from your own Claude plan. No key needed.</span>
       </div>
       <div id="ai-byok" hidden style="display:flex;flex-direction:column;gap:8px">
         <div class="chips" role="group" aria-labelledby="lbl-ai" id="provider-chips">
-          <button type="button" class="chip" data-p="anthropic">Anthropic key</button>
-          <button type="button" class="chip" data-p="openrouter">OpenRouter key</button>
-          <button type="button" class="chip" data-p="sample">No key: sample deck</button>
+          <button type="button" class="chip" data-p="anthropic" data-i18n="prov_anthropic">Anthropic key</button>
+          <button type="button" class="chip" data-p="openrouter" data-i18n="prov_openrouter">OpenRouter key</button>
+          <button type="button" class="chip" data-p="sample" data-i18n="prov_sample">No key: sample deck</button>
         </div>
         <div class="ai-box" id="key-box">
           <label class="label" for="api-key" id="key-label">Anthropic API key</label>
@@ -294,20 +304,20 @@ textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid v
             <button type="button" class="ghost" id="show-key" aria-pressed="false">Show</button>
           </div>
           <div class="models">
-            <label>Fast model, for cards<input id="m-fast" type="text" list="model-list" autocomplete="off" spellcheck="false"></label>
-            <label>Writer model, for the output<input id="m-main" type="text" list="model-list" autocomplete="off" spellcheck="false"></label>
+            <label><span data-i18n="fastModel">Fast model, for cards</span><input id="m-fast" type="text" list="model-list" autocomplete="off" spellcheck="false"></label>
+            <label><span data-i18n="writerModel">Writer model, for the output</span><input id="m-main" type="text" list="model-list" autocomplete="off" spellcheck="false"></label>
           </div>
           <datalist id="model-list"></datalist>
-          <label class="check"><input type="checkbox" id="remember"> Remember the key on this device</label>
-          <div class="btn-row"><button type="button" class="ghost" id="test-key">Test connection</button></div>
+          <label class="check"><input type="checkbox" id="remember"> <span data-i18n="remember">Remember the key on this device</span></label>
+          <div class="btn-row"><button type="button" class="ghost" id="test-key" data-i18n="testKey">Test connection</button></div>
           <p class="note" id="key-note">Your key stays in this browser and is sent only to Anthropic.</p>
         </div>
-        <p class="note" id="sample-note" hidden>Runs a built-in Vienna weekend deck with no AI, so you can try the swiping.</p>
+        <p class="note" id="sample-note" hidden data-i18n="sampleNote">Runs a built-in Vienna weekend deck with no AI, so you can try the swiping.</p>
       </div>
     </div>
 
-    <button class="primary" id="start" type="button">Deal the cards</button>
-    <p class="note" id="calib-note">Each card fills one part of the plan. The goal meter shows how many parts are covered.</p>
+    <button class="primary" id="start" type="button" data-i18n="start">Deal the cards</button>
+    <p class="note" id="calib-note" data-i18n="calibNote">Each card fills one part of the plan. The goal meter shows how many parts are covered.</p>
   </section>
 
   <!-- Swiping -->
@@ -321,7 +331,7 @@ textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid v
         <button class="finish" id="finish" type="button">Finish</button>
       </div>
       <div class="goal">
-        <div class="goal-track" role="progressbar" aria-label="Goal" aria-valuemin="0" aria-valuemax="100" id="goal-bar"><div class="goal-fill" id="goal-fill"></div></div>
+        <div class="goal-track" role="progressbar" data-i18n-aria="goalAria" aria-label="Goal" aria-valuemin="0" aria-valuemax="100" id="goal-bar"><div class="goal-fill" id="goal-fill"></div></div>
         <span class="goal-pct" id="goal-pct">0%</span>
       </div>
       <div class="slots" id="slots"></div>
@@ -329,35 +339,35 @@ textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid v
     </div>
     <div class="stack" id="stack"></div>
     <div class="controls" id="controls">
-      <button class="ctl drop" data-dir="left" type="button" aria-label="Drop (left)"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span>Drop</button>
-      <button class="ctl hold" data-dir="down" type="button" aria-label="Later (down)"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span>Later</button>
-      <button class="ctl lock" data-dir="up" type="button" aria-label="Must-have (up)"><span class="disc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2l2.6 5.5 6 .7-4.4 4.1 1.2 5.9L12 16.5l-5.4 2.9 1.2-5.9L3.4 9.4l6-.7z"/></svg></span>Must-have</button>
-      <button class="ctl keep" data-dir="right" type="button" aria-label="Keep (right)"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Keep</button>
+      <button class="ctl drop" data-dir="left" type="button" data-i18n-aria="ctl_drop_aria" aria-label="Drop (left)"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span><span data-i18n="v_drop">Drop</span></button>
+      <button class="ctl hold" data-dir="down" type="button" data-i18n-aria="ctl_hold_aria" aria-label="Later (down)"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span><span data-i18n="v_hold">Later</span></button>
+      <button class="ctl lock" data-dir="up" type="button" data-i18n-aria="ctl_lock_aria" aria-label="Must-have (up)"><span class="disc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2l2.6 5.5 6 .7-4.4 4.1 1.2 5.9L12 16.5l-5.4 2.9 1.2-5.9L3.4 9.4l6-.7z"/></svg></span><span data-i18n="v_lock">Must-have</span></button>
+      <button class="ctl keep" data-dir="right" type="button" data-i18n-aria="ctl_keep_aria" aria-label="Keep (right)"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span data-i18n="v_keep">Keep</span></button>
     </div>
-    <div class="subctl"><button class="undo" id="undo" type="button" disabled>Undo last swipe</button></div>
+    <div class="subctl"><button class="undo" id="undo" type="button" disabled data-i18n="undo">Undo last swipe</button></div>
   </section>
 
   <!-- Result -->
   <section class="screen result" id="scr-result" hidden>
     <div class="result-head">
-      <span class="label">Summary</span>
+      <span class="label" data-i18n="summaryLabel">Summary</span>
       <h2 id="res-name">Your session</h2>
       <p class="summary" id="res-summary">Summarising…</p>
     </div>
-    <p class="label section-label">Your cards</p>
+    <p class="label section-label" data-i18n="cardsLabel">Your cards</p>
     <div class="decks" id="decks"></div>
     <p class="label section-label" id="res-kind">Handoff prompt</p>
     <div class="output-wrap">
       <div class="output-bar">
         <span class="label" id="out-status">Writing…</span>
         <span class="spacer"></span>
-        <button class="ghost" id="copy" type="button" disabled>Copy</button>
+        <button class="ghost" id="copy" type="button" disabled data-i18n="copy">Copy</button>
       </div>
       <div class="output" id="output"></div>
     </div>
     <div class="btn-row">
-      <button class="ghost" id="regen" type="button" disabled>Write it again</button>
-      <button class="ghost" id="again" type="button">New session</button>
+      <button class="ghost" id="regen" type="button" disabled data-i18n="regen">Write it again</button>
+      <button class="ghost" id="again" type="button" data-i18n="again">New session</button>
     </div>
   </section>
 </div>
@@ -367,6 +377,200 @@ textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid v
 "use strict";
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ======================================================================
+   Language: EN (default) / HU. Manual toggle, plus auto-switch when the
+   topic is typed in the other language.
+   ====================================================================== */
+const STR = {
+  en: {
+    checking: "Checking…", lede: "Tell it what you're ideating. Swipe the cards it deals. Get a finished brief, plan, spec or handoff prompt.",
+    topicLabel: "What are we ideating?", defaultTopic: "A long weekend in Vienna for two, early December",
+    examples: [
+      ["App: family dinners", "An app that turns family dinners into a weekly tradition", "app"],
+      ["Event: 40th birthday", "A 40th birthday party for my wife at home, about 25 guests", "event"],
+      ["Business: crosswords", "A side business selling custom crossword puzzles", "business"],
+    ],
+    typeLabel: "It's a…", type_app: "App", type_trip: "Trip", type_event: "Event", type_business: "Business", type_other: "Something else",
+    outLabel: "At the end I want…",
+    out_brief: "Brief<small>one page to act on</small>", out_plan: "Plan<small>steps, timeline, to-dos</small>",
+    out_spec: "Build spec<small>features, structure, risks</small>", out_prompt: "Handoff prompt<small>paste into Claude</small>",
+    tempLabel: "Practical or creative?", tempLow: "Practical", tempHigh: "Creative",
+    temps: [null, ["Practical", "Proven, low-risk options. No wildcards."], ["Grounded", "Mostly proven, with a few fresh twists."],
+      ["Balanced", "A mix of solid picks and some surprises."], ["Inventive", "Unusual angles first, with practical anchors."], ["Wild", "Bold, unexpected cards. Expect lots of drops."]],
+    lenLabel: "Session length", len_c12: "12 cards", len_c20: "20 cards", len_c30: "30 cards", len_t3: "3 min", len_t5: "5 min",
+    legendAria: "Swipe directions",
+    lg_up: "<b>Must-have</b>locks it in", lg_left: "<b>Drop</b>never again", lg_right: "<b>Keep</b>good one", lg_down: "<b>Later</b>decide at the end",
+    aiLabel: "AI connection", aiChecking: "Checking where this page is running…",
+    aiClaude: "<b>Using your Claude account.</b> This page is running inside Claude, so the cards come from your own Claude plan. No key needed.",
+    prov_anthropic: "Anthropic key", prov_openrouter: "OpenRouter key", prov_sample: "No key: sample deck",
+    keyLabel: n => `${n} API key`, show: "Show", hide: "Hide", fastModel: "Fast model, for cards", writerModel: "Writer model, for the output",
+    remember: "Remember the key on this device", testKey: "Test connection",
+    keyNote: (n, saved) => `Your key stays in this browser${saved ? " (saved on this device)" : " for this visit only"} and is sent only to ${n}.`,
+    sampleNote: "Runs a built-in Vienna weekend deck with no AI, so you can try the swiping.",
+    pasteFirst: "Paste a key first.", testing: "Testing both models…", connected: "Connected. Both models answered.",
+    pasteYour: n => `Paste your ${n} key, or pick “No key: sample deck”.`,
+    start: "Deal the cards", starting: "Starting…", calibNote: "Each card fills one part of the plan. The goal meter shows how many parts are covered.",
+    b_claude: "Your Claude", b_sample: "Sample deck", b_keyNeeded: "Key needed",
+    goalAria: "Goal", cardOf: (n, m) => `Card ${n} / ${m}`, left: x => `${x} left`,
+    finish: "Finish", skip: "Skip to result",
+    bannerReview: "Decide the cards you parked for <b>later</b>. Keep, drop or make them must-haves.",
+    bannerFull: "Every part is covered. Finish now, or keep swiping to sharpen it.",
+    pipsAria: (a, b) => `${a} of ${b}`,
+    v_drop: "Drop", v_hold: "Later", v_lock: "Must-have", v_keep: "Keep",
+    ctl_drop_aria: "Drop (left)", ctl_hold_aria: "Later (down)", ctl_lock_aria: "Must-have (up)", ctl_keep_aria: "Keep (right)",
+    stamp_keep: "Keep", stamp_drop: "Drop", stamp_lock: "Must", stamp_hold: "Later",
+    undo: "Undo last swipe",
+    k_idea: "Idea", k_question: "Question", k_wildcard: "Wildcard", wildcardSlot: "Wildcard",
+    hintQ: "Right = yes · Left = no", hint: "Swipe or use the buttons", edit: "Edit", save: "Save", rewrite: "Rewrite this card", editedBy: "Edited by you.",
+    dealing: "<b>Dealing cards…</b><br>The AI is reading your swipes and writing the next ones.",
+    tryAgain: "Try again", finishNow: "Finish now", useSample: "Use the sample deck", wholeDeck: "That's the whole deck.",
+    writeMy: o => `Write my ${o.toLowerCase()}`,
+    out: { brief: "Brief", plan: "Plan", spec: "Build spec", prompt: "Handoff prompt" },
+    typeName: { app: "App", trip: "Trip", event: "Event", business: "Business", other: "Idea" },
+    summaryLabel: "Summary", sessionName: t => `${t} session`, summarising: "Summarising…", cardsLabel: "Your cards",
+    d_lock: "⭐ Must-haves", d_keep: "✓ Kept", d_hold: "⏳ Still undecided", d_drop: "✕ Dropped", noCards: "No cards swiped.",
+    copy: "Copy", copied: "Copied", selectCopy: "Select and copy", regen: "Write it again", again: "New session",
+    writing: "Writing…", thinking: s => `Thinking… ${s} s`,
+    writingNote: o => `The AI is writing your ${o.toLowerCase()}. This usually takes 10 to 60 seconds. Keep this screen open.`,
+    cutOff: "Cut off", cutOffNote: e => `This was cut off: ${e}`, builtFromCards: "Built from your cards",
+    fallbackNote: "Below is a version built from your cards. Tap “Write it again” for the full AI version.",
+    cutShort: "Cut short", sampleOutput: "Sample output", demoName: "Vienna, slowly",
+    sum_built: (x, more) => `Built around ${x}${more ? " and more" : ""}.`, sum_noLock: k => `${k} kept ideas, no must-haves yet.`,
+    sum_open: h => `${h} card${h > 1 ? "s are" : " is"} still undecided.`, sum_none: "Nothing left undecided.",
+    err: {
+      not_granted: "Claude wasn't allowed for this page. Allow it from the artifact's permissions, or use the sample deck.",
+      no_key: "No API key set. Go back and paste one, or use the sample deck.",
+      bad_key: "The API key was rejected. Check it and paste it again.",
+      no_credit: "Your account is out of credit. Top it up, then try again.",
+      bad_model: "That model name wasn't recognised. Pick another one in the settings.",
+      bad_request: "The AI service rejected the request. Check the model names in the settings.",
+      network: "Couldn't reach the AI service. Check your connection; some networks and browser extensions block it.",
+      empty_completion: "The AI returned nothing. Try again.",
+      sampling_disabled: "Claude isn't available for this account here.",
+      rate_limited: "Too many requests just now. Wait a moment, then try again.",
+      invalid_json: "The cards came back garbled. Try again.",
+      session_expired: "You've been signed out. Sign in again, then try again.",
+      refused: "Claude declined this topic. Rephrase it and start a new session.",
+      upstream_error: "Couldn't reach the AI. Check your connection and try again.",
+    },
+  },
+  hu: {
+    checking: "Ellenőrzés…", lede: "Írd le, min ötletelsz, és húzogasd a kártyákat, amiket kapsz. A végén kész összefoglalót, tervet, specifikációt vagy átadó promptot kapsz.",
+    topicLabel: "Min ötletelünk?", defaultTopic: "Hosszú hétvége Bécsben kettesben, december elején",
+    examples: [
+      ["App: családi vacsorák", "Egy app, amitől a családi vacsorák heti hagyománnyá válnak", "app"],
+      ["Esemény: 40. szülinap", "40. születésnapi buli a feleségemnek otthon, kb. 25 vendéggel", "event"],
+      ["Vállalkozás: rejtvények", "Mellékvállalkozás egyedi keresztrejtvények eladásával", "business"],
+    ],
+    typeLabel: "Ez egy…", type_app: "App", type_trip: "Utazás", type_event: "Esemény", type_business: "Vállalkozás", type_other: "Valami más",
+    outLabel: "A végén ezt kérem…",
+    out_brief: "Összefoglaló<small>egy oldal, amiből dolgozni lehet</small>", out_plan: "Terv<small>lépések, ütemezés, teendők</small>",
+    out_spec: "Specifikáció<small>funkciók, felépítés, kockázatok</small>", out_prompt: "Átadó prompt<small>bemásolható a Claude-ba</small>",
+    tempLabel: "Gyakorlatias vagy kreatív?", tempLow: "Gyakorlatias", tempHigh: "Kreatív",
+    temps: [null, ["Gyakorlatias", "Bevált, kockázatmentes ötletek. Nincs joker."], ["Megalapozott", "Főleg bevált ötletek, néhány friss csavarral."],
+      ["Kiegyensúlyozott", "Biztos választások és néhány meglepetés vegyesen."], ["Ötletes", "Szokatlan szempontok előre, gyakorlati kapaszkodókkal."], ["Vad", "Merész, váratlan kártyák. Sok lesz az elvetett."]],
+    lenLabel: "Az ötletelés hossza", len_c12: "12 kártya", len_c20: "20 kártya", len_c30: "30 kártya", len_t3: "3 perc", len_t5: "5 perc",
+    legendAria: "Húzási irányok",
+    lg_up: "<b>Kötelező</b>fixen bent marad", lg_left: "<b>Elvet</b>többé nem jön", lg_right: "<b>Megtart</b>jó ötlet", lg_down: "<b>Később</b>a végén döntesz",
+    aiLabel: "AI-kapcsolat", aiChecking: "Megnézem, hol fut ez az oldal…",
+    aiClaude: "<b>A Claude-fiókodat használja.</b> Az oldal a Claude-on belül fut, így a kártyákat a saját Claude-előfizetésed adja. Kulcs nem kell.",
+    prov_anthropic: "Anthropic-kulcs", prov_openrouter: "OpenRouter-kulcs", prov_sample: "Kulcs nélkül: mintapakli",
+    keyLabel: n => `${n} API-kulcs`, show: "Mutat", hide: "Elrejt", fastModel: "Gyors modell, a kártyákhoz", writerModel: "Író modell, az eredményhez",
+    remember: "Kulcs megjegyzése ezen az eszközön", testKey: "Kapcsolat tesztelése",
+    keyNote: (n, saved) => `A kulcsod ebben a böngészőben marad${saved ? " (elmentve ezen az eszközön)" : " (csak erre a látogatásra)"}, és kizárólag ide küldjük: ${n}.`,
+    sampleNote: "Egy beépített bécsi hétvégés paklit futtat AI nélkül, hogy kipróbálhasd a húzogatást.",
+    pasteFirst: "Előbb illessz be egy kulcsot.", testing: "Mindkét modell tesztelése…", connected: "Kapcsolódva. Mindkét modell válaszolt.",
+    pasteYour: n => `Illeszd be a(z) ${n}-kulcsodat, vagy válaszd a „Kulcs nélkül: mintapakli” lehetőséget.`,
+    start: "Oszd a kártyákat", starting: "Indul…", calibNote: "Minden kártya a terv egy részét tölti ki. A célmérő mutatja, hány rész van már lefedve.",
+    b_claude: "Saját Claude", b_sample: "Mintapakli", b_keyNeeded: "Kulcs kell",
+    goalAria: "Cél", cardOf: (n, m) => `${n}. / ${m} kártya`, left: x => `még ${x}`,
+    finish: "Kész", skip: "Ugrás az eredményhez",
+    bannerReview: "Döntsd el a <b>későbbre</b> tett kártyák sorsát: megtartod, elveted vagy kötelezővé teszed.",
+    bannerFull: "Minden rész lefedve. Befejezheted, vagy húzogass tovább a finomításhoz.",
+    pipsAria: (a, b) => `${a} / ${b}`,
+    v_drop: "Elvet", v_hold: "Később", v_lock: "Kötelező", v_keep: "Megtart",
+    ctl_drop_aria: "Elvet (balra)", ctl_hold_aria: "Később (le)", ctl_lock_aria: "Kötelező (fel)", ctl_keep_aria: "Megtart (jobbra)",
+    stamp_keep: "Megtart", stamp_drop: "Elvet", stamp_lock: "Fix", stamp_hold: "Később",
+    undo: "Utolsó húzás visszavonása",
+    k_idea: "Ötlet", k_question: "Kérdés", k_wildcard: "Joker", wildcardSlot: "Joker",
+    hintQ: "Jobbra = igen · Balra = nem", hint: "Húzd el, vagy használd a gombokat", edit: "Szerkeszt", save: "Mentés", rewrite: "Írd át a kártyát", editedBy: "Te szerkesztetted.",
+    dealing: "<b>Kártyaosztás…</b><br>Az AI olvassa a húzásaidat, és megírja a következő kártyákat.",
+    tryAgain: "Újra", finishNow: "Befejezés most", useSample: "Mintapakli használata", wholeDeck: "Ennyi volt a pakli.",
+    writeMy: o => `${o} megírása`,
+    out: { brief: "Összefoglaló", plan: "Terv", spec: "Specifikáció", prompt: "Átadó prompt" },
+    typeName: { app: "App", trip: "Utazás", event: "Esemény", business: "Vállalkozás", other: "Ötlet" },
+    summaryLabel: "Összegzés", sessionName: t => `${t}: ötletelés`, summarising: "Összegzés készül…", cardsLabel: "A kártyáid",
+    d_lock: "⭐ Kötelezők", d_keep: "✓ Megtartva", d_hold: "⏳ Még eldöntetlen", d_drop: "✕ Elvetve", noCards: "Nem húztál el kártyát.",
+    copy: "Másolás", copied: "Másolva", selectCopy: "Jelöld ki és másold", regen: "Írja meg újra", again: "Új ötletelés",
+    writing: "Írás…", thinking: s => `Gondolkodik… ${s} mp`,
+    writingNote: o => `Az AI most írja: ${o.toLowerCase()}. Ez általában 10–60 másodperc. Maradj ezen a képernyőn.`,
+    cutOff: "Megszakadt", cutOffNote: e => `Ez megszakadt: ${e}`, builtFromCards: "A kártyáidból összerakva",
+    fallbackNote: "Lent egy változat a kártyáidból. A teljes AI-változathoz koppints az „Írja meg újra” gombra.",
+    cutShort: "Túl hosszú lett, levágva", sampleOutput: "Mintaeredmény", demoName: "Bécs, lassan",
+    sum_built: (x, more) => `Erre épül: ${x}${more ? " és még más" : ""}.`, sum_noLock: k => `${k} megtartott ötlet, kötelező még nincs.`,
+    sum_open: h => `${h} kártya még eldöntetlen.`, sum_none: "Nincs eldöntetlen kártya.",
+    err: {
+      not_granted: "Az oldal nem kapott engedélyt a Claude használatára. Engedélyezd az artifact jogosultságainál, vagy használd a mintapaklit.",
+      no_key: "Nincs megadva API-kulcs. Menj vissza és illessz be egyet, vagy használd a mintapaklit.",
+      bad_key: "Az API-kulcsot elutasították. Ellenőrizd, és illeszd be újra.",
+      no_credit: "Elfogyott a kreditkereted. Töltsd fel, aztán próbáld újra.",
+      bad_model: "Ezt a modellnevet nem ismeri fel. Válassz másikat a beállításokban.",
+      bad_request: "Az AI-szolgáltatás elutasította a kérést. Ellenőrizd a modellneveket a beállításokban.",
+      network: "Nem érem el az AI-szolgáltatást. Ellenőrizd a kapcsolatot; egyes hálózatok és böngészőbővítmények blokkolják.",
+      empty_completion: "Az AI nem adott választ. Próbáld újra.",
+      sampling_disabled: "A Claude itt nem érhető el ehhez a fiókhoz.",
+      rate_limited: "Túl sok kérés egyszerre. Várj egy kicsit, aztán próbáld újra.",
+      invalid_json: "A kártyák hibásan érkeztek. Próbáld újra.",
+      session_expired: "Kijelentkeztél. Jelentkezz be újra, aztán próbáld újra.",
+      refused: "A Claude elutasította ezt a témát. Fogalmazd át, és kezdj új ötletelést.",
+      upstream_error: "Nem érem el az AI-t. Ellenőrizd a kapcsolatot, és próbáld újra.",
+    },
+  },
+};
+const LANG_KEY = "swipestorm.lang";
+let lang = "en";
+try { const l = localStorage.getItem(LANG_KEY); if (l === "hu" || l === "en") lang = l; } catch {}
+const T = () => STR[lang];
+const ERR = new Proxy({}, { get: (_, k) => STR[lang].err[k] });
+const OUT_NAME = new Proxy({}, { get: (_, k) => STR[lang].out[k] });
+const TYPE_NAME = new Proxy({}, { get: (_, k) => STR[lang].typeName[k] });
+
+/* Language guess for the topic text: returns "hu", "en" or null (unsure). */
+const HU_WORDS = new Set("az és egy hogy nem van meg is mint de már csak vagy ki mi mit hol kell lesz ami amely ez azt ezt egy két három fő nap hét hétvége nekem szeretnék szeretném egyik minden nagyon jó új régi lenne akar akarok kettesben családi otthon gyerek gyerekek feleség férj barát barátok munka cég alkalmazás utazás buli hogyan miért milyen mikor számára vagyok vagyunk velem nálunk".split(" "));
+const EN_WORDS = new Set("the an and for to of in with my i is that on at about want would like this it be are our we you your from by as or new old how why what when who which can will should".split(" "));
+function detectLang(text) {
+  const t = String(text || "").toLowerCase();
+  if (/[őű]/.test(t)) return "hu";
+  const words = t.match(/[a-záéíóöúüőű]+/g) || [];
+  let hu = 0, en = 0;
+  for (const w of words) { if (HU_WORDS.has(w)) hu++; if (EN_WORDS.has(w)) en++; }
+  hu += (t.match(/[áéíóöúü]/g) || []).length * 0.5;
+  if (hu >= 2 && hu > en * 1.2) return "hu";
+  if (en >= 2 && en > hu) return "en";
+  return null;
+}
+
+function applyStatic() {
+  const L = T();
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach(el => { const v = L[el.dataset.i18n]; if (typeof v === "string") el.textContent = v; });
+  document.querySelectorAll("[data-i18n-html]").forEach(el => { const v = L[el.dataset.i18nHtml]; if (typeof v === "string") el.innerHTML = v; });
+  document.querySelectorAll("[data-i18n-aria]").forEach(el => { const v = L[el.dataset.i18nAria]; if (typeof v === "string") el.setAttribute("aria-label", v); });
+  document.querySelectorAll("#lang-toggle button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+  $("#examples").innerHTML = L.examples.map(([label, ex, type]) => `<button type="button" data-ex="${esc(ex)}" data-type="${type}">${esc(label)}</button>`).join("");
+  // Swap the untouched default topic to the new language.
+  const topic = $("#topic"), other = STR[lang === "en" ? "hu" : "en"].defaultTopic;
+  if (topic.value.trim() === other) { topic.value = L.defaultTopic; lastDetected = lang; }
+}
+let lastDetected = "en";
+function setLang(l) {
+  if (l !== "en" && l !== "hu") return;
+  lang = l;
+  try { localStorage.setItem(LANG_KEY, l); } catch {}
+  refreshLang();
+}
+let refreshLang = () => applyStatic();   // extended below once every renderer exists
 
 /* ======================================================================
    AI connection
@@ -416,27 +620,28 @@ function renderAI() {
   $("#ai-claude").hidden = AI.mode !== "claude";
   $("#ai-byok").hidden = AI.mode !== "byok";
   const b = $("#live-badge");
-  if (AI.mode === "claude") { b.textContent = "Your Claude"; b.classList.add("live"); return; }
+  if (AI.mode === "claude") { b.textContent = T().b_claude; b.classList.add("live"); return; }
   const p = AI.provider, isKey = p !== "sample";
   document.querySelectorAll("#provider-chips .chip").forEach(c => c.setAttribute("aria-pressed", String(c.dataset.p === p)));
   $("#key-box").hidden = !isKey;
   $("#sample-note").hidden = isKey;
   if (isKey) {
     const P = PROVIDERS[p];
-    $("#key-label").textContent = `${P.name} API key`;
+    $("#key-label").textContent = T().keyLabel(P.name);
     $("#api-key").placeholder = P.keyHint;
     $("#api-key").value = AI.keys[p] || "";
     $("#m-fast").value = model("quick");
     $("#m-main").value = model("default");
     $("#remember").checked = AI.remember;
-    $("#key-note").textContent = `Your key stays in this browser${AI.remember ? " (saved on this device)" : " for this visit only"} and is sent only to ${P.name}.`;
+    $("#key-note").textContent = T().keyNote(P.name, AI.remember);
+    $("#show-key").textContent = $("#api-key").type === "password" ? T().show : T().hide;
     if (p === "openrouter") loadOpenRouterModels();
     else $("#model-list").innerHTML = ["claude-haiku-5-5","claude-sonnet-5-5","claude-opus-5-5"].map(m => `<option value="${m}">`).join("");
   }
-  b.textContent = !isKey ? "Sample deck" : aiLive() ? P_name(p) : "Key needed";
+  b.textContent = !isKey ? T().b_sample : aiLive() ? P_name(p) : T().b_keyNeeded;
   b.classList.toggle("live", aiLive());
 }
-const P_name = p => PROVIDERS[p] ? PROVIDERS[p].name : "Sample deck";
+const P_name = p => PROVIDERS[p] ? PROVIDERS[p].name : T().b_sample;
 
 let orModelsLoaded = false;
 async function loadOpenRouterModels() {
@@ -456,7 +661,7 @@ $("#provider-chips").addEventListener("click", e => {
 $("#api-key").addEventListener("input", e => { AI.keys[AI.provider] = e.target.value.trim(); store.save(); renderAI(); $("#api-key").focus(); });
 $("#show-key").addEventListener("click", () => {
   const i = $("#api-key"), show = i.type === "password";
-  i.type = show ? "text" : "password"; $("#show-key").textContent = show ? "Hide" : "Show"; $("#show-key").setAttribute("aria-pressed", String(show));
+  i.type = show ? "text" : "password"; $("#show-key").textContent = show ? T().hide : T().show; $("#show-key").setAttribute("aria-pressed", String(show));
 });
 ["m-fast","m-main"].forEach(id => $("#" + id).addEventListener("change", () => {
   AI.models[AI.provider] = { fast: $("#m-fast").value.trim() || PROVIDERS[AI.provider].fast, main: $("#m-main").value.trim() || PROVIDERS[AI.provider].main };
@@ -465,12 +670,12 @@ $("#show-key").addEventListener("click", () => {
 $("#remember").addEventListener("change", e => { AI.remember = e.target.checked; store.save(); renderAI(); });
 $("#test-key").addEventListener("click", async () => {
   const note = $("#key-note"), btn = $("#test-key");
-  if (!aiLive()) { note.innerHTML = `<span class="err">Paste a key first.</span>`; $("#api-key").focus(); return; }
-  btn.disabled = true; note.textContent = "Testing both models…";
+  if (!aiLive()) { note.innerHTML = `<span class="err">${esc(T().pasteFirst)}</span>`; $("#api-key").focus(); return; }
+  btn.disabled = true; note.textContent = T().testing;
   try {
     await aiText("Reply with the single word OK.", { tier: "quick", maxTokens: 16 });
     await aiText("Reply with the single word OK.", { tier: "default", maxTokens: 16 });
-    note.innerHTML = `<span class="ok">Connected. Both models answered.</span>`;
+    note.innerHTML = `<span class="ok">${esc(T().connected)}</span>`;
   } catch (e) {
     note.innerHTML = `<span class="err">${esc(ERR[e.code] || ERR.upstream_error)}</span> <span class="note">(${esc(e.code || "error")}${e.message ? ": " + esc(String(e.message).slice(0, 140)) : ""})</span>`;
   }
@@ -574,8 +779,6 @@ async function aiJson(prompt, opts = {}) {
 const TARGET = 3;                        // points that fill one slot
 const POINTS = { keep: 1, lock: 2, drop: 0, hold: 0 };
 const VERDICT = { right: "keep", left: "drop", up: "lock", down: "hold" };
-const OUT_NAME = { brief: "Brief", plan: "Plan", spec: "Build spec", prompt: "Handoff prompt" };
-const TYPE_NAME = { app: "App", trip: "Trip", event: "Event", business: "Business", other: "Idea" };
 const TEMPS = [
   null,
   { name: "Practical", desc: "Proven, low-risk options. No wildcards.", rule: "Stick to proven, conventional, low-risk options. No wildcard cards at all." },
@@ -607,14 +810,15 @@ document.querySelectorAll("[data-group]").forEach(g => g.addEventListener("click
   const c = e.target.closest(".chip"); if (!c) return;
   S.cfg[g.dataset.group] = c.dataset.v; syncChips();
 }));
-document.querySelectorAll(".examples button").forEach(b => b.addEventListener("click", () => {
+$("#examples").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
   $("#topic").value = b.dataset.ex; S.cfg.type = b.dataset.type; syncChips();
-}));
+});
 syncChips();
 function syncTemp() {
-  const t = TEMPS[S.cfg.temp];
-  $("#temp-name").textContent = t.name; $("#temp-desc").textContent = t.desc;
-  $("#temp").setAttribute("aria-valuetext", t.name);
+  const [name, desc] = T().temps[S.cfg.temp];
+  $("#temp-name").textContent = name; $("#temp-desc").textContent = desc;
+  $("#temp").setAttribute("aria-valuetext", name);
 }
 $("#temp").addEventListener("input", e => { S.cfg.temp = Math.min(5, Math.max(1, +e.target.value || 3)); syncTemp(); });
 S.cfg.temp = +$("#temp").value || 3; syncTemp();
@@ -622,7 +826,7 @@ S.cfg.temp = +$("#temp").value || 3; syncTemp();
 $("#start").addEventListener("click", startSession);
 
 /* ---------- prompts ---------- */
-function langLine() { return "Write everything in the same language as the topic text."; }
+function langLine() { return `Write every card, slot name and output in the same language as the topic text. If that language is unclear, write in ${lang === "hu" ? "Hungarian" : "English"}.`; }
 function cardShape() {
   return '{"slot":"<slot id>","kind":"idea"|"question"|"wildcard","glyph":"<one emoji>","title":"<max 9 words>","detail":"<max 22 words>"}';
 }
@@ -636,7 +840,7 @@ function cardRules() {
 }
 function sessionHeader() {
   const c = S.cfg;
-  return `Topic: ${c.topic}\nWhat it is: ${TYPE_NAME[c.type]}\nFinal deliverable: ${OUT_NAME[c.output]}\nCreativity: ${TEMPS[c.temp].name} (${c.temp}/5)\n${langLine()}`;
+  return `Topic: ${c.topic}\nWhat it is: ${STR.en.typeName[c.type]}\nFinal deliverable: ${STR.en.out[c.output]}\nCreativity: ${TEMPS[c.temp].name} (${c.temp}/5)\n${langLine()}`;
 }
 function decisionsBlock() {
   const by = v => S.history.filter(h => h.verdict === v).map(h => h.card);
@@ -645,7 +849,7 @@ function decisionsBlock() {
   return `Slots and coverage:\n${slotLines}\n\nMUST-HAVES (swiped up):\n${fmt(by("lock"))}\n\nKEPT:\n${fmt(by("keep"))}\n\nDROPPED (avoid anything similar):\n${fmt(by("drop"))}\n\nPARKED FOR LATER:\n${fmt(S.held)}`;
 }
 function openingPrompt() {
-  return `You are running a swipe brainstorming session. The person swipes cards: right = keep, left = drop, up = must-have, down = decide later.\n\n${sessionHeader()}\n\nStep 1: define 4 to 6 slots: the parts a finished, usable ${OUT_NAME[S.cfg.output].toLowerCase()} for this needs (for an app, e.g. problem, target user, core loop, differentiator, tech, monetisation; for a trip, e.g. dates & pace, base, must-dos, food, budget). Each slot: id (short-kebab-case), name (1-3 words).\nStep 2: write 8 opening cards spread across the slots.\n${cardRules()}\n\nReply with only JSON: {"slots":[{"id":"","name":""}],"cards":[${cardShape()}]}`;
+  return `You are running a swipe brainstorming session. The person swipes cards: right = keep, left = drop, up = must-have, down = decide later.\n\n${sessionHeader()}\n\nStep 1: define 4 to 6 slots: the parts a finished, usable ${STR.en.out[S.cfg.output].toLowerCase()} for this needs (for an app, e.g. problem, target user, core loop, differentiator, tech, monetisation; for a trip, e.g. dates & pace, base, must-dos, food, budget). Each slot: id (short-kebab-case), name (1-3 words).\nStep 2: write 8 opening cards spread across the slots.\n${cardRules()}\n\nReply with only JSON: {"slots":[{"id":"","name":""}],"cards":[${cardShape()}]}`;
 }
 function batchPrompt(n) {
   const all = S.history.map(h => h.card).concat(S.deck, S.held);
@@ -670,30 +874,54 @@ function summaryPrompt() {
 }
 
 /* ---------- sample deck (no live AI) ---------- */
-const DEMO_SLOTS = [
-  { id: "pace", name: "Dates & pace" }, { id: "base", name: "Where to stay" },
-  { id: "do", name: "Must-dos" }, { id: "food", name: "Food & drink" }, { id: "budget", name: "Budget" },
-];
-const DEMO_CARDS = [
-  ["do","idea","🎄","Christmas markets at Spittelberg and Am Hof","The smaller, less touristy markets. Go after dark, when the lights are on."],
-  ["pace","idea","🗓️","Thursday evening to Sunday night","Three full days. Arrive after work Thursday, leave on the last train Sunday."],
-  ["base","idea","🏘️","Stay in Neubau, near MuseumsQuartier","Walkable to the centre, full of cafés and small shops, quieter at night."],
-  ["food","idea","☕","One long coffeehouse breakfast","Café Sperl or Prückel: slow morning, newspapers, a Melange and an egg dish."],
-  ["pace","question","😴","Keep every morning unplanned?","Nothing booked before 11. Trade sights for slow starts."],
-  ["do","idea","🎭","Standing tickets at the Staatsoper","Under €20, sold on the day. Leave at the interval if it's not your thing."],
-  ["budget","idea","🚆","Go by train, not car","Railjet from Budapest is under three hours. No parking stress in the centre."],
-  ["do","wildcard","🚋","Night tram ride on the full Ring loop","Tram 1 and 2 cover the Ring. Cheap sightseeing with a hot drink in hand."],
-  ["food","idea","🍷","Heuriger evening in Grinzing","A wine tavern on the city edge: young wine, cold cuts, slow conversation."],
-  ["base","question","🔑","Apartment instead of a hotel?","More space and a kitchen, but no breakfast and no front desk."],
-  ["do","question","🖼️","Book Klimt at the Belvedere in advance?","Timed tickets avoid the queue for The Kiss in December."],
-  ["budget","question","💶","Cap it at a mid-range budget?","Roughly €150 a night for the stay, one splurge dinner, the rest casual."],
-  ["food","question","🍽️","One tasting-menu dinner?","A single splurge night, booked weeks ahead."],
-  ["do","idea","♨️","Afternoon at Therme Wien","Thermal pools and saunas on a cold day, 20 minutes by U-Bahn."],
-  ["base","idea","🧖","Hotel with a rooftop sauna","Warm up after markets with a view over the roofs."],
-  ["budget","idea","🎫","Wiener Linien 72-hour pass","Unlimited trams and U-Bahn. Pays off after about eight rides."],
-  ["pace","wildcard","🇸🇰","Day trip to Bratislava by train","One hour away. A different capital and its own Christmas market."],
-  ["food","idea","🥩","Schnitzel lunch in a traditional Beisl","Plachutta or Figlmüller for lunch, when it's easier to get a table."],
-];
+const DEMO = {
+  en: {
+    slots: [{ id: "pace", name: "Dates & pace" }, { id: "base", name: "Where to stay" }, { id: "do", name: "Must-dos" }, { id: "food", name: "Food & drink" }, { id: "budget", name: "Budget" }],
+    cards: [
+      ["do","idea","🎄","Christmas markets at Spittelberg and Am Hof","The smaller, less touristy markets. Go after dark, when the lights are on."],
+      ["pace","idea","🗓️","Thursday evening to Sunday night","Three full days. Arrive after work Thursday, leave on the last train Sunday."],
+      ["base","idea","🏘️","Stay in Neubau, near MuseumsQuartier","Walkable to the centre, full of cafés and small shops, quieter at night."],
+      ["food","idea","☕","One long coffeehouse breakfast","Café Sperl or Prückel: slow morning, newspapers, a Melange and an egg dish."],
+      ["pace","question","😴","Keep every morning unplanned?","Nothing booked before 11. Trade sights for slow starts."],
+      ["do","idea","🎭","Standing tickets at the Staatsoper","Under €20, sold on the day. Leave at the interval if it's not your thing."],
+      ["budget","idea","🚆","Go by train, not car","Railjet from Budapest is under three hours. No parking stress in the centre."],
+      ["do","wildcard","🚋","Night tram ride on the full Ring loop","Tram 1 and 2 cover the Ring. Cheap sightseeing with a hot drink in hand."],
+      ["food","idea","🍷","Heuriger evening in Grinzing","A wine tavern on the city edge: young wine, cold cuts, slow conversation."],
+      ["base","question","🔑","Apartment instead of a hotel?","More space and a kitchen, but no breakfast and no front desk."],
+      ["do","question","🖼️","Book Klimt at the Belvedere in advance?","Timed tickets avoid the queue for The Kiss in December."],
+      ["budget","question","💶","Cap it at a mid-range budget?","Roughly €150 a night for the stay, one splurge dinner, the rest casual."],
+      ["food","question","🍽️","One tasting-menu dinner?","A single splurge night, booked weeks ahead."],
+      ["do","idea","♨️","Afternoon at Therme Wien","Thermal pools and saunas on a cold day, 20 minutes by U-Bahn."],
+      ["base","idea","🧖","Hotel with a rooftop sauna","Warm up after markets with a view over the roofs."],
+      ["budget","idea","🎫","Wiener Linien 72-hour pass","Unlimited trams and U-Bahn. Pays off after about eight rides."],
+      ["pace","wildcard","🇸🇰","Day trip to Bratislava by train","One hour away. A different capital and its own Christmas market."],
+      ["food","idea","🥩","Schnitzel lunch in a traditional Beisl","Plachutta or Figlmüller for lunch, when it's easier to get a table."],
+    ],
+  },
+  hu: {
+    slots: [{ id: "pace", name: "Időpont és tempó" }, { id: "base", name: "Szállás" }, { id: "do", name: "Kihagyhatatlan" }, { id: "food", name: "Étel és ital" }, { id: "budget", name: "Költségkeret" }],
+    cards: [
+      ["do","idea","🎄","Adventi vásárok a Spittelbergen és az Am Hofon","A kisebb, kevésbé turistás vásárok. Sötétedés után menjetek, amikor ég a kivilágítás."],
+      ["pace","idea","🗓️","Csütörtök estétől vasárnap estig","Három teljes nap. Csütörtökön munka után érkeztek, vasárnap az utolsó vonattal jöttök haza."],
+      ["base","idea","🏘️","Szállás Neubauban, a MuseumsQuartier mellett","Gyalog elérhető a belváros, tele kávézókkal és kis boltokkal, éjjel csendesebb."],
+      ["food","idea","☕","Egy hosszú kávéházi reggeli","Café Sperl vagy Prückel: lassú reggel, újságok, egy Melange és egy tojásétel."],
+      ["pace","question","😴","Minden délelőtt szabad marad?","11 előtt semmi sincs lefoglalva. Látnivalók helyett lassú reggelek."],
+      ["do","idea","🎭","Állóhely a Staatsoperben","20 € alatt, aznap lehet venni. Ha nem tetszik, a szünetben eljöhettek."],
+      ["budget","idea","🚆","Vonattal, nem autóval","A Railjet Budapestről három óránál rövidebb. Nincs parkolási stressz a belvárosban."],
+      ["do","wildcard","🚋","Éjszakai villamosozás a teljes Ring körül","Az 1-es és a 2-es bejárja a Ringet. Olcsó városnézés, forró itallal a kézben."],
+      ["food","idea","🍷","Heurigeres este Grinzingben","Borozó a város szélén: újbor, hidegtál, lassú beszélgetés."],
+      ["base","question","🔑","Apartman szálloda helyett?","Több hely és konyha, de nincs reggeli és recepció."],
+      ["do","question","🖼️","Klimt a Belvederében, előre foglalva?","Időpontos jeggyel decemberben is megúszható a sor A csók előtt."],
+      ["budget","question","💶","Közepes költségkeret?","Nagyjából 150 € egy éjszaka, egy kiadósabb vacsora, a többi egyszerű."],
+      ["food","question","🍽️","Egy kóstolómenüs vacsora?","Egyetlen nagy este, hetekkel előre foglalva."],
+      ["do","idea","♨️","Délután a Therme Wienben","Termálmedencék és szaunák egy hideg napon, 20 perc metróval."],
+      ["base","idea","🧖","Szálloda tetőteraszos szaunával","Vásárok után átmelegedni, kilátással a háztetőkre."],
+      ["budget","idea","🎫","Wiener Linien 72 órás bérlet","Korlátlan villamos és metró. Nagyjából nyolc út után megtérül."],
+      ["pace","wildcard","🇸🇰","Egynapos kirándulás Pozsonyba vonattal","Egy óra az út. Egy másik főváros, saját adventi vásárral."],
+      ["food","idea","🥩","Bécsi szelet ebédre egy hagyományos Beislben","Plachutta vagy Figlmüller ebédidőben, amikor könnyebb asztalt kapni."],
+    ],
+  },
+};
 
 /* ---------- session ---------- */
 function mkCard(o) {
@@ -702,7 +930,7 @@ function mkCard(o) {
   return { id: ++S.uid, slot: String(o.slot || ""), kind, glyph: g || KIND_GLYPH[kind],
     title: String(o.title || "").trim().slice(0, 120), detail: String(o.detail || "").trim().slice(0, 260) };
 }
-function slotName(id) { const s = S.slots.find(x => x.id === id); return s ? s.name : "Wildcard"; }
+function slotName(id) { const s = S.slots.find(x => x.id === id); return s ? s.name : T().wildcardSlot; }
 function slotScore(s) {
   return S.history.reduce((a, h) => a + (h.card.slot === s.id ? POINTS[h.verdict] : 0), 0);
 }
@@ -712,13 +940,14 @@ function goal() { return S.slots.length ? S.slots.reduce((a, s) => a + fill(s), 
 async function startSession() {
   const topic = $("#topic").value.trim();
   if (!topic) { $("#topic").focus(); return; }
+  autoLang(topic);
   Object.assign(S, { cfg: { ...S.cfg, topic }, slots: [], deck: [], history: [], held: [], swiped: 0, fetching: false, fetchErr: null, phase: "swipe" });
-  $("#start").disabled = true; $("#start").textContent = "Starting…";
+  $("#start").disabled = true; $("#start").textContent = T().starting;
   await aiReady;
-  $("#start").disabled = false; $("#start").textContent = "Deal the cards";
+  $("#start").disabled = false; $("#start").textContent = T().start;
   if (AI.mode === "byok" && AI.provider !== "sample" && !aiLive()) {
     S.phase = "calib";
-    $("#key-note").innerHTML = `<span class="err">Paste your ${esc(P_name(AI.provider))} key, or pick “No key: sample deck”.</span>`;
+    $("#key-note").innerHTML = `<span class="err">${esc(T().pasteYour(P_name(AI.provider)))}</span>`;
     $("#api-key").focus(); return;
   }
   S.live = aiLive();
@@ -738,8 +967,8 @@ async function startSession() {
 }
 function loadDemo() {
   S.live = false; S.fetchErr = null; S.fetching = false;
-  if (!S.slots.length) S.slots = DEMO_SLOTS.map(s => ({ ...s }));
-  S.deck = DEMO_CARDS.map(([slot, kind, glyph, title, detail]) => mkCard({ slot, kind, glyph, title, detail }));
+  if (!S.slots.length) S.slots = DEMO[lang].slots.map(s => ({ ...s }));
+  S.deck = DEMO[lang].cards.map(([slot, kind, glyph, title, detail]) => mkCard({ slot, kind, glyph, title, detail }));
   render();
 }
 function dedupe(cards) {
@@ -801,15 +1030,15 @@ function show(name) {
 }
 function renderCounter() {
   let t;
-  if (S.phase === "review") t = `${S.deck.length} left`;
-  else if (minutes()) { const ms = Math.max(0, S.endAt - Date.now()); const m = Math.floor(ms / 60000), s = Math.floor(ms / 1000) % 60; t = `${m}:${String(s).padStart(2,"0")} left`; }
-  else t = `Card ${Math.min(S.swiped + 1, budget())} / ${budget()}`;
+  if (S.phase === "review") t = T().left(S.deck.length);
+  else if (minutes()) { const ms = Math.max(0, S.endAt - Date.now()); const m = Math.floor(ms / 60000), s = Math.floor(ms / 1000) % 60; t = T().left(`${m}:${String(s).padStart(2,"0")}`); }
+  else t = T().cardOf(Math.min(S.swiped + 1, budget()), budget());
   $("#counter").textContent = t;
 }
 function render() {
   if (S.phase !== "swipe" && S.phase !== "review") return;
   const review = S.phase === "review";
-  $("#mode-badge").textContent = !S.live ? "Sample deck" : AI.mode === "claude" ? "Your Claude" : P_name(AI.provider);
+  $("#mode-badge").textContent = !S.live ? T().b_sample : AI.mode === "claude" ? T().b_claude : P_name(AI.provider);
   $("#mode-badge").classList.toggle("live", S.live);
   renderCounter();
   const g = Math.round(goal() * 100);
@@ -817,15 +1046,15 @@ function render() {
   $("#goal-pct").textContent = g + "%";
   $("#goal-bar").setAttribute("aria-valuenow", g);
   $("#finish").classList.toggle("ready", g >= 100);
-  $("#finish").textContent = review ? "Skip to result" : "Finish";
+  $("#finish").textContent = review ? T().skip : T().finish;
   $("#slots").innerHTML = S.slots.map(s => {
     const pts = slotScore(s), lockPts = S.history.filter(h => h.card.slot === s.id && h.verdict === "lock").length * 2;
     const pips = Array.from({ length: TARGET }, (_, i) => `<i class="pip ${i < Math.min(pts, TARGET) ? (i < lockPts ? "on lock" : "on") : ""}"></i>`).join("");
-    return `<span class="slot ${pts >= TARGET ? "full" : ""}">${esc(s.name)}<span class="pips" aria-label="${Math.min(pts, TARGET)} of ${TARGET}">${pips}</span></span>`;
+    return `<span class="slot ${pts >= TARGET ? "full" : ""}">${esc(s.name)}<span class="pips" aria-label="${esc(T().pipsAria(Math.min(pts, TARGET), TARGET))}">${pips}</span></span>`;
   }).join("");
   const banner = $("#banner");
-  if (review) { banner.hidden = false; banner.innerHTML = `Decide the cards you parked for <b>later</b>. Keep, drop or make them must-haves.`; }
-  else if (g >= 100) { banner.hidden = false; banner.textContent = "Every part is covered. Finish now, or keep swiping to sharpen it."; }
+  if (review) { banner.hidden = false; banner.innerHTML = T().bannerReview; }
+  else if (g >= 100) { banner.hidden = false; banner.textContent = T().bannerFull; }
   else banner.hidden = true;
   document.querySelector('.ctl.hold').disabled = review;
   $("#undo").disabled = !S.lastFirst || review;
@@ -851,29 +1080,29 @@ function cardEl(c) {
   const el = document.createElement("article");
   el.className = "card";
   el.innerHTML = `
-    <header class="card-head"><span class="slot-tag">${esc(slotName(c.slot))}</span><span class="kind ${c.kind}">${c.kind === "question" ? "Question" : c.kind === "wildcard" ? "Wildcard" : "Idea"}</span></header>
+    <header class="card-head"><span class="slot-tag">${esc(slotName(c.slot))}</span><span class="kind ${c.kind}">${esc(T()["k_" + c.kind])}</span></header>
     <div class="card-body"><span class="glyph" aria-hidden="true">${esc(c.glyph)}</span><h2 class="card-title">${esc(c.title)}</h2><p class="card-detail">${esc(c.detail)}</p></div>
-    <footer class="card-foot"><span class="hint">${c.kind === "question" ? "Right = yes · Left = no" : "Swipe or use the buttons"}</span><button class="edit-btn" type="button">Edit</button></footer>
-    <span class="stamp right">Keep</span><span class="stamp left">Drop</span><span class="stamp up">Must</span><span class="stamp down">Later</span>`;
+    <footer class="card-foot"><span class="hint">${esc(c.kind === "question" ? T().hintQ : T().hint)}</span><button class="edit-btn" type="button">${esc(T().edit)}</button></footer>
+    <span class="stamp right">${esc(T().stamp_keep)}</span><span class="stamp left">${esc(T().stamp_drop)}</span><span class="stamp up">${esc(T().stamp_lock)}</span><span class="stamp down">${esc(T().stamp_hold)}</span>`;
   el.querySelector(".edit-btn").addEventListener("click", () => startEdit(el, c));
   return el;
 }
 function startEdit(el, c) {
   const body = el.querySelector(".card-body");
-  body.innerHTML = `<span class="glyph" aria-hidden="true">${esc(c.glyph)}</span><label class="label" for="edit-title">Rewrite this card</label><textarea id="edit-title" class="edit-area" rows="3">${esc(c.title)}</textarea>`;
+  body.innerHTML = `<span class="glyph" aria-hidden="true">${esc(c.glyph)}</span><label class="label" for="edit-title">${esc(T().rewrite)}</label><textarea id="edit-title" class="edit-area" rows="3">${esc(c.title)}</textarea>`;
   const btn = el.querySelector(".edit-btn");
-  btn.textContent = "Save";
+  btn.textContent = T().save;
   const ta = body.querySelector("textarea"); ta.focus();
-  btn.onclick = () => { const v = ta.value.trim(); if (v) { c.title = v.slice(0, 120); c.detail = c.detail ? "Edited by you. " + c.detail : "Edited by you."; } renderStack(); };
+  btn.onclick = () => { const v = ta.value.trim(); if (v) { c.title = v.slice(0, 120); c.detail = c.detail ? T().editedBy + " " + c.detail : T().editedBy; } renderStack(); };
 }
 function placeholder() {
   const el = document.createElement("div");
   el.className = "card placeholder";
   if (S.fetching) {
-    el.innerHTML = `<div class="dealing" aria-hidden="true"><i></i><i></i><i></i></div><p><b>Dealing cards…</b><br>Claude is reading your swipes and writing the next ones.</p>`;
+    el.innerHTML = `<div class="dealing" aria-hidden="true"><i></i><i></i><i></i></div><p>${T().dealing}</p>`;
   } else if (S.fetchErr) {
     const msg = ERR[S.fetchErr] || ERR.upstream_error;
-    el.innerHTML = `<p class="err">${esc(msg)}</p><div class="btn-row"><button class="ghost" type="button" data-a="retry">Try again</button><button class="ghost" type="button" data-a="finish">Finish now</button></div>${S.history.length ? "" : `<button class="ghost" type="button" data-a="demo">Use the sample deck</button>`}`;
+    el.innerHTML = `<p class="err">${esc(msg)}</p><div class="btn-row"><button class="ghost" type="button" data-a="retry">${esc(T().tryAgain)}</button><button class="ghost" type="button" data-a="finish">${esc(T().finishNow)}</button></div>${S.history.length ? "" : `<button class="ghost" type="button" data-a="demo">${esc(T().useSample)}</button>`}`;
     el.addEventListener("click", e => {
       const a = e.target.closest("button")?.dataset.a; if (!a) return;
       if (a === "retry") { S.fetchErr = null; if (!S.slots.length) startSession(); else ensureDeck(); }
@@ -881,27 +1110,11 @@ function placeholder() {
       if (a === "demo") loadDemo();
     });
   } else {
-    el.innerHTML = `<p>That's the whole deck.</p><button class="primary" type="button">Write my ${esc(OUT_NAME[S.cfg.output].toLowerCase())}</button>`;
+    el.innerHTML = `<p>${esc(T().wholeDeck)}</p><button class="primary" type="button">${esc(T().writeMy(OUT_NAME[S.cfg.output]))}</button>`;
     el.querySelector("button").addEventListener("click", finishSwiping);
   }
   return el;
 }
-const ERR = {
-  not_granted: "Claude wasn't allowed for this page. Allow it from the artifact's permissions, or use the sample deck.",
-  no_key: "No API key set. Go back and paste one, or use the sample deck.",
-  bad_key: "The API key was rejected. Check it and paste it again.",
-  no_credit: "Your account is out of credit. Top it up, then try again.",
-  bad_model: "That model name wasn't recognised. Pick another one in the settings.",
-  bad_request: "The AI service rejected the request. Check the model names in the settings.",
-  network: "Couldn't reach the AI service. Check your connection; some networks and browser extensions block it.",
-  empty_completion: "The AI returned nothing. Try again.",
-  sampling_disabled: "Claude isn't available for this account here.",
-  rate_limited: "Too many requests just now. Wait a moment, then try again.",
-  invalid_json: "The cards came back garbled. Try again.",
-  session_expired: "You've been signed out. Sign in again, then try again.",
-  refused: "Claude declined this topic. Rephrase it and start a new session.",
-  upstream_error: "Couldn't reach Claude. Check your connection and try again.",
-};
 
 /* ---------- gestures ---------- */
 function dirOf(dx, dy, final) {
@@ -987,14 +1200,14 @@ function copyText() {
 }
 $("#copy").addEventListener("click", () => {
   const btn = $("#copy");
-  const done = ok => { btn.textContent = ok ? "Copied" : "Select and copy"; setTimeout(() => btn.textContent = "Copy", 1800); };
+  const done = ok => { btn.textContent = ok ? T().copied : T().selectCopy; setTimeout(() => btn.textContent = T().copy, 1800); };
   const fallback = () => { const r = document.createRange(); r.selectNodeContents($("#output")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); done(false); };
   try { navigator.clipboard.writeText(copyText()).then(() => done(true), fallback); } catch { fallback(); }
 });
 $("#regen").addEventListener("click", () => writeOutput());
 $("#again").addEventListener("click", () => {
   if (S.outCtl) S.outCtl.abort();
-  S.phase = "calib"; show("calib");
+  S.phase = "calib"; show("calib"); $("#scr-calib").scrollTop = 0;
 });
 
 function renderDecks() {
@@ -1003,53 +1216,55 @@ function renderDecks() {
     if (!items.length) return "";
     return `<details><summary>${label} (${items.length})</summary><ul>${items.map(c => `<li><span class="g-sm" aria-hidden="true">${esc(c.glyph)}</span><span>${esc(c.title)} <span class="note">· ${esc(slotName(c.slot))}</span></span></li>`).join("")}</ul></details>`;
   };
-  const html = group("lock", "⭐ Must-haves") + group("keep", "✓ Kept") + group("hold", "⏳ Still undecided") + group("drop", "✕ Dropped");
-  $("#decks").innerHTML = html || `<p class="note">No cards swiped.</p>`;
+  const L = T();
+  const html = group("lock", L.d_lock) + group("keep", L.d_keep) + group("hold", L.d_hold) + group("drop", L.d_drop);
+  $("#decks").innerHTML = html || `<p class="note">${esc(L.noCards)}</p>`;
 }
 
 function generate() {
   clearInterval(S.timer);
   S.phase = "result"; show("result");
   $("#res-kind").textContent = OUT_NAME[S.cfg.output];
-  $("#res-name").textContent = TYPE_NAME[S.cfg.type] + " session";
+  $("#res-name").textContent = T().sessionName(TYPE_NAME[S.cfg.type]);
   renderDecks();
   if (S.live) {
-    $("#res-summary").textContent = "Summarising…";
+    $("#res-summary").textContent = T().summarising;
     aiJson(summaryPrompt()).then(r => {
       if (r && r.name) $("#res-name").textContent = String(r.name).slice(0, 60);
       $("#res-summary").textContent = r && r.summary ? String(r.summary) : demoSummary();
     }).catch(() => { $("#res-summary").textContent = demoSummary(); });
   } else {
-    $("#res-name").textContent = "Vienna, slowly";
+    $("#res-name").textContent = T().demoName;
     $("#res-summary").textContent = demoSummary();
   }
   writeOutput();
 }
 function demoSummary() {
   const L = titles("lock"), K = titles("keep"), H = titles("hold");
-  const parts = [`${S.cfg.topic}.`];
-  parts.push(L.length ? `Built around ${L.slice(0, 3).join(", ").toLowerCase()}${L.length > 3 ? " and more" : ""}.` : `${K.length} kept ideas, no must-haves yet.`);
-  parts.push(H.length ? `${H.length} card${H.length > 1 ? "s are" : " is"} still undecided.` : "Nothing left undecided.");
+  const parts = [S.cfg.topic.replace(/[.!?]*$/, ".")];
+  const X = T();
+  parts.push(L.length ? X.sum_built(L.slice(0, 3).join(", ").toLowerCase(), L.length > 3) : X.sum_noLock(K.length));
+  parts.push(H.length ? X.sum_open(H.length) : X.sum_none);
   return parts.join(" ");
 }
 async function writeOutput() {
   const status = $("#out-status"), out = $("#output");
   $("#copy").disabled = true; $("#regen").disabled = true;
-  if (!S.live) { S.outText = demoOutput(); out.innerHTML = md(S.outText); status.textContent = "Sample output"; $("#copy").disabled = false; return; }
+  if (!S.live) { S.outText = demoOutput(); out.innerHTML = md(S.outText); status.textContent = T().sampleOutput; $("#copy").disabled = false; return; }
   if (S.outCtl) S.outCtl.abort();
   const ctl = S.outCtl = new AbortController();
   const t0 = Date.now(); let streaming = false;
   clearInterval(S.outTimer);
-  const tickOut = () => { if (!streaming) status.textContent = `Thinking… ${Math.round((Date.now() - t0) / 1000)} s`; };
+  const tickOut = () => { if (!streaming) status.textContent = T().thinking(Math.round((Date.now() - t0) / 1000)); };
   tickOut(); S.outTimer = setInterval(tickOut, 1000);
-  out.innerHTML = `<p class="note">Claude is writing your ${esc(OUT_NAME[S.cfg.output].toLowerCase())}. This usually takes 10 to 60 seconds. Keep this screen open.</p>`;
+  out.innerHTML = `<p class="note">${esc(T().writingNote(OUT_NAME[S.cfg.output]))}</p>`;
   let text = "", truncated = false;
   try {
     ({ text, truncated } = await aiText(outputPrompt(), {
       signal: ctl.signal, tier: "default",
       onText: u => {
         if (ctl !== S.outCtl) return;
-        streaming = true; status.textContent = "Writing…";
+        streaming = true; status.textContent = T().writing;
         S.outText = u.text; out.innerHTML = md(u.text);
       },
     }));
@@ -1061,12 +1276,12 @@ async function writeOutput() {
     const partial = (e && e.text) || "";
     if (partial.trim().length > 200) {
       S.outText = partial;
-      out.innerHTML = md(partial) + `<p class="err">This was cut off: ${esc(ERR[code] || ERR.upstream_error)} <span class="note">(${esc(code)})</span></p>`;
-      status.textContent = "Cut off";
+      out.innerHTML = md(partial) + `<p class="err">${esc(T().cutOffNote(ERR[code] || ERR.upstream_error))} <span class="note">(${esc(code)})</span></p>`;
+      status.textContent = T().cutOff;
     } else {
       S.outText = localOutput();
-      out.innerHTML = `<p class="err">${esc(ERR[code] || ERR.upstream_error)} <span class="note">(${esc(code)})</span></p><p class="note">Below is a version built from your cards. Tap “Write it again” for Claude's full version.</p>` + md(S.outText);
-      status.textContent = "Built from your cards";
+      out.innerHTML = `<p class="err">${esc(ERR[code] || ERR.upstream_error)} <span class="note">(${esc(code)})</span></p><p class="note">${esc(T().fallbackNote)}</p>` + md(S.outText);
+      status.textContent = T().builtFromCards;
     }
     $("#copy").disabled = false; $("#regen").disabled = false;
     return;
@@ -1074,64 +1289,117 @@ async function writeOutput() {
   if (ctl !== S.outCtl) return;
   clearInterval(S.outTimer);
   S.outText = text; out.innerHTML = md(text);
-  status.textContent = truncated ? "Cut short" : OUT_NAME[S.cfg.output];
+  status.textContent = truncated ? T().cutShort : OUT_NAME[S.cfg.output];
   $("#copy").disabled = !S.outText; $("#regen").disabled = false;
 }
 
-/* ---------- output built from the cards (fallback when Claude fails) ---------- */
-const NEXT_ASK = {
-  app: "Turn this into a build plan and then a first working prototype. Ask me up to three questions first if anything critical is unclear.",
-  trip: "Produce a day-by-day itinerary with times, transport between stops, what to book in advance and rough costs.",
-  event: "Produce a plan with a timeline, the guest experience, a shopping list and who does what.",
-  business: "Produce a one-page business plan: offer, customer, pricing, channels and the first 30 days.",
-  other: "Produce a concrete plan I can start on this week.",
+/* ---------- output built from the cards (fallback when the AI fails, and the sample deck) ---------- */
+const OUT_TXT = {
+  en: {
+    must: "must-have", notYet: "Not decided yet", none: "(none)", noneYet: "(none yet)", nothing: "Nothing chosen yet",
+    helpWith: (type, topic) => `Help me with this ${type.toLowerCase()}: ${topic}`,
+    mustH: "Must-haves (non-negotiable)", wantH: "Wanted, but flexible", openH: "Still undecided, help me choose", avoidH: "Avoid",
+    plan: "Plan", spec: "Spec", decisions: "Decisions still open", musts: "Must-haves", nice: "Nice-to-haves", outScope: "Out of scope", openQ: "Open questions",
+    next: {
+      app: "Turn this into a build plan and then a first working prototype. Ask me up to three questions first if anything critical is unclear.",
+      trip: "Produce a day-by-day itinerary with times, transport between stops, what to book in advance and rough costs.",
+      event: "Produce a plan with a timeline, the guest experience, a shopping list and who does what.",
+      business: "Produce a one-page business plan: offer, customer, pricing, channels and the first 30 days.",
+      other: "Produce a concrete plan I can start on this week.",
+    },
+    vienna: {
+      prompt: (L, K, H, D) => "```\nPlan a long weekend in Vienna for two in early December.\n\nMust-haves (non-negotiable):\n" + L + "\n\nWanted, but flexible:\n" + K + "\n\nStill undecided, help me choose:\n" + H + "\n\nAvoid:\n" + D + "\n\nProduce a day-by-day itinerary (Thursday evening to Sunday night) with times, transport between stops, what to book in advance and rough costs per person. Keep the pace relaxed.\n```",
+      plan: (book, days, H) => `# Vienna weekend plan\n\nGoal: a relaxed long weekend for two in early December.\n\n## Now: book\n${book}\n\n## Thursday evening\n1. Train in, check in, short walk to the nearest market.\n\n## Friday and Saturday\n${days}\n\n## Sunday\n1. Slow breakfast, last market, evening train home.\n\n## Decisions still open\n${H}`,
+      spec: (L, K, per, H) => `# Vienna weekend: execution plan\n\n## Overview\nA relaxed long weekend for two built around December atmosphere.\n\n## Must-haves\n${L}\n\n## Nice-to-haves\n${K}\n\n${per}\n\n## Bookings to make\n- Train tickets\n- Accommodation\n- Anything timed among the must-haves\n\n## Risks\n- Markets get crowded on Saturday evening\n- Popular restaurants book out weeks ahead\n\n## Open questions\n${H}`,
+      brief: (per, H) => `# Vienna, slowly\n\nA long weekend for two in early December. The plan keeps what you swiped up as fixed and treats the rest as options.\n\n${per}\n\n## Open questions\n${H}\n\n## First three steps\n1. Book the train and the stay.\n2. Reserve anything timed among the must-haves.\n3. Pin the rest on a shared map.`,
+    },
+  },
+  hu: {
+    must: "kötelező", notYet: "Még nincs eldöntve", none: "(nincs)", noneYet: "(még nincs)", nothing: "Még semmi sincs kiválasztva",
+    helpWith: (type, topic) => `Segíts ebben (${type.toLowerCase()}): ${topic}`,
+    mustH: "Kötelezők (nem alku tárgya)", wantH: "Jó lenne, de rugalmas", openH: "Még eldöntetlen, segíts választani", avoidH: "Kerülendő",
+    plan: "Terv", spec: "Specifikáció", decisions: "Még nyitott döntések", musts: "Kötelezők", nice: "Jó, ha van", outScope: "Nem része", openQ: "Nyitott kérdések",
+    next: {
+      app: "Készíts ebből fejlesztési tervet, majd egy első működő prototípust. Ha valami lényeges nem világos, előbb tegyél fel legfeljebb három kérdést.",
+      trip: "Készíts napi bontású programot időpontokkal, a helyszínek közti közlekedéssel, az előre foglalandókkal és becsült költségekkel.",
+      event: "Készíts tervet ütemtervvel, a vendégek élményével, bevásárlólistával és feladatkiosztással.",
+      business: "Készíts egyoldalas üzleti tervet: ajánlat, ügyfél, árazás, csatornák és az első 30 nap.",
+      other: "Készíts konkrét tervet, amit még ezen a héten elkezdhetek.",
+    },
+    vienna: {
+      prompt: (L, K, H, D) => "```\nTervezz egy hosszú hétvégét Bécsbe kettesben, december elejére.\n\nKötelezők (nem alku tárgya):\n" + L + "\n\nJó lenne, de rugalmas:\n" + K + "\n\nMég eldöntetlen, segíts választani:\n" + H + "\n\nKerülendő:\n" + D + "\n\nKészíts napi bontású programot (csütörtök estétől vasárnap estig) időpontokkal, a helyszínek közti közlekedéssel, az előre foglalandókkal és fejenkénti becsült költségekkel. Maradjon kényelmes a tempó.\n```",
+      plan: (book, days, H) => `# Bécsi hétvége: terv\n\nCél: kényelmes hosszú hétvége kettesben, december elején.\n\n## Most: foglalás\n${book}\n\n## Csütörtök este\n1. Érkezés vonattal, bejelentkezés, rövid séta a legközelebbi vásárhoz.\n\n## Péntek és szombat\n${days}\n\n## Vasárnap\n1. Lassú reggeli, még egy vásár, esti vonat haza.\n\n## Még nyitott döntések\n${H}`,
+      spec: (L, K, per, H) => `# Bécsi hétvége: megvalósítási terv\n\n## Áttekintés\nKényelmes hosszú hétvége kettesben, a decemberi hangulatra építve.\n\n## Kötelezők\n${L}\n\n## Jó, ha van\n${K}\n\n${per}\n\n## Foglalandók\n- Vonatjegyek\n- Szállás\n- Az időponthoz kötött kötelezők\n\n## Kockázatok\n- Szombat este zsúfoltak a vásárok\n- A népszerű éttermek hetekre előre beteltek\n\n## Nyitott kérdések\n${H}`,
+      brief: (per, H) => `# Bécs, lassan\n\nHosszú hétvége kettesben, december elején. Ami felfelé húztál, az fix, a többi lehetőség.\n\n${per}\n\n## Nyitott kérdések\n${H}\n\n## Első három lépés\n1. Vonat és szállás lefoglalása.\n2. Az időponthoz kötött kötelezők lefoglalása.\n3. A többit rakd fel egy közös térképre.`,
+    },
+  },
 };
-function localOutput() {
-  const L = titles("lock"), K = titles("keep"), H = titles("hold"), D = titles("drop");
-  const li = a => a.length ? a.map(t => "- " + t).join("\n") : "- (none)";
-  const bySlot = (fmt) => S.slots.map(s => {
+function bySlot(fmt) {
+  const O = OUT_TXT[lang];
+  return S.slots.map(s => {
     const items = S.history.filter(h => h.card.slot === s.id && h.verdict !== "drop")
-      .map(h => h.card.title + (h.verdict === "lock" ? " **(must-have)**" : ""));
-    return `## ${s.name}\n${items.length ? items.map(fmt).join("\n") : "- Not decided yet"}`;
+      .map(h => h.card.title + (h.verdict === "lock" ? ` **(${O.must})**` : ""));
+    return `## ${s.name}\n${items.length ? items.map(fmt).join("\n") : "- " + O.notYet}`;
   }).join("\n\n");
+}
+function localOutput() {
+  const O = OUT_TXT[lang];
+  const L = titles("lock"), K = titles("keep"), H = titles("hold"), D = titles("drop");
+  const li = a => a.length ? a.map(t => "- " + t).join("\n") : "- " + O.none;
   const topic = S.cfg.topic;
   switch (S.cfg.output) {
     case "prompt":
-      return "```\n" + `Help me with this ${TYPE_NAME[S.cfg.type].toLowerCase()}: ${topic}\n\nMust-haves (non-negotiable):\n${li(L)}\n\nWanted, but flexible:\n${li(K)}\n\nStill undecided, help me choose:\n${li(H)}\n\nAvoid:\n${li(D)}\n\n${NEXT_ASK[S.cfg.type]}\n` + "```";
+      return "```\n" + `${O.helpWith(TYPE_NAME[S.cfg.type], topic)}\n\n${O.mustH}:\n${li(L)}\n\n${O.wantH}:\n${li(K)}\n\n${O.openH}:\n${li(H)}\n\n${O.avoidH}:\n${li(D)}\n\n${O.next[S.cfg.type]}\n` + "```";
     case "plan":
-      return `# Plan: ${topic}\n\n${bySlot((t, i) => `${i + 1}. ${t}`)}\n\n## Decisions still open\n${li(H)}`;
+      return `# ${O.plan}: ${topic}\n\n${bySlot((t, i) => `${i + 1}. ${t}`)}\n\n## ${O.decisions}\n${li(H)}`;
     case "spec":
-      return `# Spec: ${topic}\n\n## Must-haves\n${li(L)}\n\n## Nice-to-haves\n${li(K)}\n\n${bySlot(t => "- " + t)}\n\n## Out of scope\n${li(D)}\n\n## Open questions\n${li(H)}`;
+      return `# ${O.spec}: ${topic}\n\n## ${O.musts}\n${li(L)}\n\n## ${O.nice}\n${li(K)}\n\n${bySlot(t => "- " + t)}\n\n## ${O.outScope}\n${li(D)}\n\n## ${O.openQ}\n${li(H)}`;
     default:
-      return `# ${topic}\n\n${demoSummary()}\n\n${bySlot(t => "- " + t)}\n\n## Open questions\n${li(H)}`;
+      return `# ${topic}\n\n${demoSummary()}\n\n${bySlot(t => "- " + t)}\n\n## ${O.openQ}\n${li(H)}`;
   }
 }
 
 /* ---------- sample output ---------- */
 function titles(v) { return (v === "hold" ? S.held : S.history.filter(h => h.verdict === v).map(h => h.card)).map(c => c.title); }
 function demoOutput() {
-  const L = titles("lock"), K = titles("keep"), H = titles("hold"), D = titles("drop");
-  const li = a => a.length ? a.map(t => "- " + t).join("\n") : "- (none yet)";
-  const per = S.slots.map(s => {
-    const items = S.history.filter(h => h.card.slot === s.id && (h.verdict === "keep" || h.verdict === "lock"))
-      .map(h => "- " + h.card.title + (h.verdict === "lock" ? " **(must-have)**" : ""));
-    return `## ${s.name}\n${items.length ? items.join("\n") : "- Not decided yet"}`;
-  }).join("\n\n");
-  if (S.cfg.output === "prompt") {
-    return "```\nPlan a long weekend in Vienna for two in early December.\n\nMust-haves (non-negotiable):\n" + li(L) + "\n\nWanted, but flexible:\n" + li(K) +
-      "\n\nStill undecided, help me choose:\n" + li(H) + "\n\nAvoid:\n" + li(D) +
-      "\n\nProduce a day-by-day itinerary (Thursday evening to Sunday night) with times, transport between stops, what to book in advance and rough costs per person. Keep the pace relaxed.\n```";
-  }
+  const O = OUT_TXT[lang], V = O.vienna;
+  const li = a => a.length ? a.map(t => "- " + t).join("\n") : "- " + O.noneYet;
+  const L = li(titles("lock")), K = li(titles("keep")), H = li(titles("hold")), D = li(titles("drop"));
+  const per = bySlot(t => "- " + t);
+  if (S.cfg.output === "prompt") return V.prompt(L, K, H, D);
   if (S.cfg.output === "plan") {
     const pick = slot => S.history.filter(h => h.card.slot === slot && h.verdict !== "drop").map(h => h.card.title);
-    const n = a => a.length ? a.map((t, i) => `${i + 1}. ${t}`).join("\n") : "1. Nothing chosen yet";
-    return `# Vienna weekend plan\n\nGoal: a relaxed long weekend for two in early December.\n\n## Now: book\n${n(pick("pace").concat(pick("base"), pick("budget")))}\n\n## Thursday evening\n1. Train in, check in, short walk to the nearest market.\n\n## Friday and Saturday\n${n(pick("do").concat(pick("food")))}\n\n## Sunday\n1. Slow breakfast, last market, evening train home.\n\n## Decisions still open\n${li(H)}`;
+    const n = a => a.length ? a.map((t, i) => `${i + 1}. ${t}`).join("\n") : "1. " + O.nothing;
+    return V.plan(n(pick("pace").concat(pick("base"), pick("budget"))), n(pick("do").concat(pick("food"))), H);
   }
-  if (S.cfg.output === "spec") {
-    return `# Vienna weekend: execution plan\n\n## Overview\nA relaxed long weekend for two built around December atmosphere.\n\n## Must-haves\n${li(L)}\n\n## Nice-to-haves\n${li(K)}\n\n${per}\n\n## Bookings to make\n- Train tickets\n- Accommodation\n- Anything timed among the must-haves\n\n## Risks\n- Markets get crowded on Saturday evening\n- Popular restaurants book out weeks ahead\n\n## Open questions\n${li(H)}`;
-  }
-  return `# Vienna, slowly\n\nA long weekend for two in early December. The plan keeps what you swiped up as fixed and treats the rest as options.\n\n${per}\n\n## Open questions\n${li(H)}\n\n## First three steps\n1. Book the train and the stay.\n2. Reserve anything timed among the must-haves.\n3. Pin the rest on a shared map.`;
+  if (S.cfg.output === "spec") return V.spec(L, K, per, H);
+  return V.brief(per, H);
 }
+
+/* ---------- language wiring ---------- */
+refreshLang = () => {
+  applyStatic();
+  syncTemp();
+  if (AI.mode !== "pending") renderAI();
+  if (S.phase === "swipe" || S.phase === "review") render();
+  if (S.phase === "result") {
+    renderDecks();
+    $("#res-kind").textContent = OUT_NAME[S.cfg.output];
+  }
+};
+$("#lang-toggle").addEventListener("click", e => {
+  const b = e.target.closest("button[data-lang]"); if (b) setLang(b.dataset.lang);
+});
+function autoLang(text) {
+  const d = detectLang(text);
+  if (!d || d === lastDetected) return;
+  lastDetected = d;
+  if (d !== lang) setLang(d);
+}
+let langTimer = 0;
+$("#topic").addEventListener("input", e => { clearTimeout(langTimer); langTimer = setTimeout(() => autoLang(e.target.value), 500); });
+$("#examples").addEventListener("click", () => { lastDetected = lang; });
+applyStatic(); syncTemp();
 })();
 </script>
 
