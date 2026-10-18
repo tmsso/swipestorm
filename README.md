@@ -8,6 +8,8 @@ Tinder-style brainstorming on anything. Say what you're ideating, swipe the card
 - The result is always a short summary, your folded card lists, and the output you picked
 - English and Hungarian interface (EN/HU toggle, top right). It switches to Hungarian by itself when you type the topic in Hungarian; the cards and output follow the topic's language
 
+**Try it: [swipestorm.tmsso.com](https://swipestorm.tmsso.com)**
+
 It's one HTML file with no build step and no dependencies.
 
 ## Three ways to run it
@@ -24,7 +26,7 @@ When it runs as a Claude artifact, the page uses the viewer's own Claude account
 
 ### 2. Bring your own key (GitHub Pages or a local file)
 
-Open the hosted page, or download `index.html` and open it in a browser. Under **AI connection**, pick one:
+Open [swipestorm.tmsso.com](https://swipestorm.tmsso.com), or download `index.html` and open it in a browser. Under **AI connection**, pick one:
 
 | Option | Key | Default models (you can edit them) |
 |---|---|---|
