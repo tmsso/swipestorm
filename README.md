@@ -48,3 +48,7 @@ One 20-card session makes roughly 4 to 6 small card requests plus one longer wri
 ## Develop
 
 Edit `index.html` and reload. Everything is in that one file: styles, markup and the script. The AI layer is the `aiText` / `aiJson` pair near the top of the script; add another provider there.
+
+## Brand
+
+The logo is three ruled index cards turning around one point: a brainstorm drawn as a storm of cards. Files in [`brand/`](brand/): `mark.svg` (the mark on its own) and `icon.svg` (app icon). The site uses `favicon.svg` and `apple-touch-icon.png`.
