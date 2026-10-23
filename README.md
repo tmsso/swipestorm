@@ -6,6 +6,8 @@ Tinder-style brainstorming on anything. Say what you're ideating, swipe the card
 - A goal meter fills as each part of the plan (the AI's "slots") gets covered
 - A practical ↔ creative slider controls how bold the cards are
 - The result is always a short summary, your folded card lists, and the output you picked
+- **Refine** a finished session: deal more cards (or none), change the output type, and say what to focus on
+- **Share** the result (your phone's share sheet, or copy), **download** it as Markdown, and find recent sessions again on the start screen (saved in this browser only)
 - English and Hungarian interface (EN/HU toggle, top right). It switches to Hungarian by itself when you type the topic in Hungarian; the cards and output follow the topic's language
 
 **Try it: [swipestorm.tmsso.com](https://swipestorm.tmsso.com)**

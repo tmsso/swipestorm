@@ -17,7 +17,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
 /* Layout: one-screen phone app. Blue-grey desk, ruled index cards stacked in the middle,
-   four direction controls at the bottom; header carries the goal meter and slot pips. */
+   Keep/Drop big at the bottom with Must-have/Later between them; a segmented goal meter on top. */
 :root{
   --desk:#e4e9f0; --desk-2:#d7dee8; --card:#fdfdfa; --ink:#1b2430; --muted:#5b6677; --line:#c9d1dc;
   --rule-blue:#cfdcf0; --rule-red:#e08a83;
@@ -54,13 +54,33 @@ button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outl
 .screen{flex:1;min-height:0;display:flex;flex-direction:column}
 .label{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 
-/* ---------- Calibration ---------- */
-.calib{overflow-y:auto;gap:18px;padding-bottom:8px}
-.brand{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:6px}
-.brand h1{font-family:var(--f-display);font-weight:800;font-size:40px;line-height:.95;margin:0;letter-spacing:.01em;text-transform:uppercase}
-.brand h1 span{color:var(--accent)}
-@media (max-width:380px){.brand h1{font-size:36px}.brand .mark{width:36px;height:36px}}
+/* ---------- Shared ---------- */
+.scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding-bottom:12px;overscroll-behavior:contain}
+.foot{flex:0 0 auto;display:flex;flex-direction:column;gap:6px;padding-top:10px;border-top:1px solid var(--line);background:var(--desk)}
+.foot.row{flex-direction:row}
+.foot.row .primary{flex:2}
+.foot.row .ghost{flex:1}
+.center{text-align:center}
+.primary{background:var(--accent);color:var(--accent-ink);border:0;border-radius:14px;min-height:52px;padding:0 18px;font-weight:700;font-size:16px;width:100%}
+.primary:disabled{opacity:.5;cursor:default}
+.ghost{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;min-height:44px;padding:0 14px;font-size:14px}
+.ghost:disabled{opacity:.5;cursor:default}
+.ghost.small{min-height:32px;padding:0 10px;font-size:13px;border-radius:8px}
+.note{font-size:13px;color:var(--muted);margin:0}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.btn-row > *{flex:1}
+.err{color:var(--drop)}
+.ok{color:var(--keep)}
+.spacer{flex:1}
+.icon-btn{width:44px;height:44px;flex:0 0 auto;display:grid;place-items:center;background:none;border:0;border-radius:10px;color:var(--ink)}
+.badge{white-space:nowrap;flex:0 0 auto;font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:4px;padding:2px 5px;color:var(--muted)}
+
+/* ---------- Setup ---------- */
+.calib{gap:0}
+.brand{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:4px}
 .brand-main{display:flex;align-items:center;gap:10px;min-width:0}
+.brand h1{font-family:var(--f-display);font-weight:800;font-size:clamp(28px,8.6vw,36px);line-height:.95;margin:0;letter-spacing:.01em;text-transform:uppercase;white-space:nowrap;overflow:hidden;min-width:0}
+.brand h1 span{color:var(--accent)}
 /* Logo mark: three ruled index cards turning around one point */
 .mark{flex:0 0 auto;display:block}
 .mark rect{fill:var(--card);stroke:var(--ink);stroke-width:4;stroke-linejoin:round}
@@ -68,64 +88,81 @@ button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outl
 .mark .c1{fill:var(--accent)}
 .mark .r1{stroke:var(--card)}
 .mark .hub{fill:var(--lock);stroke:var(--ink);stroke-width:3}
-.top-row .mark rect{stroke-width:6}
-.lede{margin:4px 0 0;color:var(--muted);max-width:42ch;text-wrap:balance}
+.lang{display:inline-flex;flex:0 0 auto;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.lang button{background:none;border:0;min-height:32px;padding:0 9px;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;color:var(--muted)}
+.lang button[aria-pressed="true"]{background:var(--desk-2);color:var(--ink)}
 .field{display:flex;flex-direction:column;gap:8px}
-textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;resize:none;width:100%}
-#topic{min-height:84px;font-size:16px}
-.examples{display:flex;flex-wrap:wrap;gap:6px}
-.examples button{background:none;border:1px dashed var(--line);border-radius:999px;padding:4px 10px;font-size:13px;color:var(--muted)}
+.field.tight{gap:6px}
+.label-row{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.temp-name{font-family:var(--f-display);font-weight:800;font-size:18px;letter-spacing:.03em;text-transform:uppercase}
+textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;resize:none;width:100%}
+#topic{height:80px;font-size:17px;line-height:1.35}
+.examples{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;white-space:nowrap}
+.examples::-webkit-scrollbar{display:none}
+.examples button{flex:0 0 auto;background:none;border:1px dashed var(--line);border-radius:999px;min-height:32px;padding:0 11px;font-size:13px;color:var(--muted)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 12px;font-size:14px}
-.chip[aria-pressed="true"]{background:var(--ink);color:var(--card);border-color:var(--ink)}
-.chip small{display:block;font-size:11px;opacity:.75}
-.row2{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center}
-.legend{display:grid;grid-template-columns:1fr auto 1fr;grid-template-rows:auto auto auto;gap:6px 10px;align-items:center;justify-items:center;
-  background:var(--desk-2);border-radius:12px;padding:14px 10px}
-.legend .mini{grid-column:2;grid-row:2;width:56px;height:74px;border-radius:6px;background:var(--card);box-shadow:var(--shadow);
-  background-image:linear-gradient(var(--rule-red),var(--rule-red)),repeating-linear-gradient(to bottom,transparent 0 11px,var(--rule-blue) 11px 12px);
-  background-size:100% 1px,100% 100%;background-position:0 16px,0 18px;background-repeat:no-repeat,no-repeat}
-.lg{font-size:13px;text-align:center;line-height:1.25}
-.lg b{display:block;font-family:var(--f-display);font-size:18px;letter-spacing:.03em;text-transform:uppercase}
-.lg-up{grid-column:2;grid-row:1}.lg-down{grid-column:2;grid-row:3}.lg-left{grid-column:1;grid-row:2;justify-self:end}.lg-right{grid-column:3;grid-row:2;justify-self:start}
-.lg-up b{color:var(--lock)}.lg-down b{color:var(--hold)}.lg-left b{color:var(--drop)}.lg-right b{color:var(--keep)}
-.primary{background:var(--accent);color:var(--accent-ink);border:0;border-radius:12px;padding:14px 18px;font-weight:700;font-size:16px;width:100%}
-.primary:disabled{opacity:.5;cursor:default}
-.ghost{background:none;border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:14px}
-.note{font-size:13px;color:var(--muted);margin:0}
+.chip{background:var(--card);border:1px solid var(--line);border-radius:10px;min-height:40px;padding:0 12px;font-size:14px;color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--card);border-color:var(--ink);font-weight:700}
+.seg-row{display:flex;gap:6px}
+.seg-row .chip{flex:1;min-width:0;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg-row .chip.wide{flex:1.4}
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.tile{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;text-align:left;min-height:52px;padding:8px 12px;font-size:15px;font-weight:700}
+.tile small{font-weight:400;font-size:12px;color:var(--muted)}
+.tile[aria-pressed="true"] small{color:var(--desk-2)}
+#temp{width:100%;accent-color:var(--accent);margin:0}
+.segmented{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;background:var(--desk-2);border-radius:12px;padding:3px}
+.segmented.four{grid-template-columns:1.8fr 1fr 1fr 1fr}
+.segmented .chip{border:0;background:transparent;min-height:38px;padding:0 4px;border-radius:9px;white-space:nowrap}
+.segmented .chip[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(20,32,52,.18)}
+.ai-row{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:0 14px;text-align:left;font-size:14px}
+.ai-row .dot{width:9px;height:9px;border-radius:50%;background:var(--muted);flex:0 0 auto}
+.ai-row .dot.ok{background:var(--keep)}
+.ai-row .dot.warn{background:var(--drop)}
+.ai-row-text{flex:1;min-width:0}
+.ai-row-act{color:var(--accent);font-size:13px}
+.ai-row svg{color:var(--accent);transition:transform .2s}
+.ai-row[aria-expanded="true"] svg{transform:rotate(90deg)}
+#ai-panel,.byok{display:flex;flex-direction:column;gap:8px}
+.ai-box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.ai-box input[type=password],.ai-box input[type=text]{font:inherit;font-size:16px;color:var(--ink);background:var(--desk);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%;min-width:0}
+.ai-box input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.models{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.models label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);min-width:0}
+@media (max-width:420px){.models{grid-template-columns:1fr}}
+.check{display:flex;align-items:center;gap:8px;font-size:14px}
+.check input{width:18px;height:18px;accent-color:var(--accent)}
+.key-row{display:flex;gap:8px}
+.key-row input{flex:1}
+.recent{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.recent li{display:flex;align-items:stretch;gap:4px}
+.recent-open{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 12px}
+.recent-open b{font-size:15px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recent-open small{font-size:12px;color:var(--muted)}
+.recent .icon-btn{color:var(--muted)}
 
-/* ---------- Session header ---------- */
-.top{display:flex;flex-direction:column;gap:8px;padding-bottom:6px}
-.top-row{display:flex;align-items:center;gap:10px}
-.top-row .name{font-family:var(--f-display);font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:.02em}
-.badge{white-space:nowrap;flex:0 0 auto;font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:4px;padding:2px 5px;color:var(--muted)}
-.badge.live{color:var(--keep);border-color:var(--keep)}
-.spacer{flex:1}
-.counter{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
-.finish{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 11px;font-size:13px;font-weight:700}
+/* ---------- Swiping ---------- */
+.top{display:flex;flex-direction:column;gap:6px;padding-bottom:4px}
+.top-row{display:flex;align-items:center;gap:6px;margin-left:-10px}
+.counter{flex:1;text-align:center;font-family:var(--f-mono);font-size:12px;letter-spacing:.04em;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.finish{background:var(--card);border:1px solid var(--line);border-radius:10px;min-height:40px;padding:0 14px;font-size:14px;font-weight:700}
 .finish.ready{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.goal{display:flex;align-items:center;gap:10px}
-.goal-track{flex:1;height:10px;border-radius:5px;background:var(--desk-2);overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
-.goal-fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--keep));border-radius:5px;transition:width .35s ease}
-.goal-pct{font-family:var(--f-display);font-weight:800;font-size:20px;font-variant-numeric:tabular-nums;min-width:4.2ch;text-align:right}
-.slots{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-width:0;padding-bottom:2px}
-.slots::-webkit-scrollbar{display:none}
-.slot{flex:0 0 auto;display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 9px 4px 10px;font-size:12px;white-space:nowrap}
-.slot.full{border-color:var(--keep)}
-.pips{display:inline-flex;gap:2px}
-.pip{width:6px;height:6px;border-radius:50%;background:var(--line)}
-.pip.on{background:var(--keep)}
-.pip.lock{background:var(--lock)}
-.banner{background:var(--desk-2);border-radius:10px;padding:8px 12px;font-size:13px;text-align:center}
+.goal-row{display:flex;align-items:baseline;gap:8px}
+.goal-pct{font-family:var(--f-display);font-weight:800;font-size:28px;line-height:1;font-variant-numeric:tabular-nums}
+.segs{display:grid;gap:4px}
+.seg-bar{height:8px;border-radius:4px;background:var(--desk-2);overflow:hidden}
+.seg-bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .35s ease}
+.seg-bar.full i{background:var(--keep)}
+.seg-lbl{font-family:var(--f-mono);font-size:10px;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg-lbl.full{color:var(--keep)}
+.banner{background:var(--desk-2);border-radius:10px;padding:8px 12px;font-size:13px;text-align:center;display:flex;flex-direction:column;gap:8px}
 .banner b{color:var(--hold)}
-
-/* ---------- Deck ---------- */
-.stack{flex:1;min-height:0;position:relative;margin:6px 0 10px}
+.stack{flex:1;min-height:0;position:relative;margin:10px 0 8px}
 .card{position:absolute;inset:0;margin:auto;width:min(100%,360px);height:min(100%,460px);
-  background-color:var(--card);border-radius:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden;
+  background-color:var(--card);border-radius:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden;
   touch-action:none;user-select:none;-webkit-user-select:none;will-change:transform;transition:transform .25s ease, opacity .25s ease}
-.card.back1{transform:translateY(12px) scale(.955);opacity:.92}
-.card.back2{transform:translateY(24px) scale(.91);opacity:.75}
+.card.back1{transform:translateY(12px) scale(.955);opacity:.9}
+.card.back2{transform:translateY(24px) scale(.91);opacity:.72}
 .card.top{cursor:grab}
 .card.top:active{cursor:grabbing}
 .card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 18px 10px;border-bottom:2px solid var(--rule-red)}
@@ -139,8 +176,7 @@ textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid v
 .card-detail{margin:0;font-size:16px;line-height:30px;color:var(--muted)}
 .card-foot{display:flex;justify-content:space-between;align-items:center;padding:8px 12px 12px 18px;gap:8px}
 .card-foot .hint{font-size:12px;color:var(--muted)}
-.edit-btn{background:none;border:1px solid var(--line);border-radius:7px;padding:4px 10px;font-size:13px}
-.edit-area{font-size:20px;font-weight:700;line-height:1.3;min-height:96px}
+.edit-btn{background:none;border:1px solid var(--line);border-radius:8px;min-height:36px;padding:0 12px;font-size:13px}
 .stamp{position:absolute;font-family:var(--f-display);font-weight:800;font-size:34px;text-transform:uppercase;letter-spacing:.04em;
   border:4px solid currentColor;border-radius:8px;padding:0 10px;opacity:0;pointer-events:none;background:var(--card)}
 .stamp.right{color:var(--keep);top:56px;left:18px;transform:rotate(-12deg)}
@@ -154,53 +190,68 @@ textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid v
 .dealing i{width:10px;height:14px;border-radius:2px;background:var(--rule-blue);animation:deal 1s infinite ease-in-out}
 .dealing i:nth-child(2){animation-delay:.15s}.dealing i:nth-child(3){animation-delay:.3s}
 @keyframes deal{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-
-/* ---------- Controls ---------- */
-.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;align-items:end}
-.ctl{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;padding:0;font-size:12px;color:var(--muted)}
-.ctl .disc{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:var(--card);box-shadow:var(--shadow);border:2px solid currentColor}
-.ctl svg{width:24px;height:24px}
-.ctl.drop .disc{color:var(--drop)}.ctl.hold .disc{color:var(--hold)}.ctl.lock .disc{color:var(--lock)}.ctl.keep .disc{color:var(--keep)}
+.controls{display:flex;align-items:center;justify-content:center;gap:20px;padding-top:2px}
+.ctl{background:none;border:0;padding:0;color:var(--ink)}
 .ctl:disabled{opacity:.35;cursor:default}
-.subctl{display:flex;justify-content:center;padding-top:8px}
-.undo{background:none;border:0;font-size:13px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.ctl.big{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:13px}
+.ctl.big .disc{width:68px;height:68px;border-radius:50%;display:grid;place-items:center;box-shadow:var(--shadow)}
+.ctl.big svg{width:28px;height:28px}
+.ctl.drop .disc{background:var(--card);border:2px solid var(--drop);color:var(--drop)}
+.ctl.keep .disc{background:var(--keep);color:#ffffff}
+.mid{display:flex;flex-direction:column;gap:10px}
+.ctl.pill{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 14px 0 6px;background:var(--card);border:2px solid var(--line);border-radius:999px;font-size:13px}
+.ctl.pill.lock{border-color:var(--lock)}
+.ctl.pill.hold{border-color:var(--hold)}
+.pdisc{width:30px;height:30px;border-radius:50%;display:grid;place-items:center}
+.pdisc svg{width:16px;height:16px}
+.ctl.lock .pdisc{background:#f2b632;color:#1b2430}
+.ctl.hold .pdisc{background:var(--desk-2);color:var(--hold)}
+.subctl{display:flex;justify-content:center;padding-top:6px}
+.undo{background:none;border:0;min-height:36px;font-size:13px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
 .undo:disabled{opacity:.4;text-decoration:none;cursor:default}
 
-/* ---------- Language toggle ---------- */
-.brand-side{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:0 0 auto}
-.lang{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
-.lang button{background:none;border:0;padding:2px 7px;font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;color:var(--muted)}
-.lang button[aria-pressed="true"]{background:var(--desk-2);color:var(--ink)}
+/* ---------- First-swipe guide (always dark, over either theme) ---------- */
+.coach{position:fixed;inset:0;z-index:50;background:rgba(15,21,31,.86);display:flex;align-items:center;justify-content:center;
+  padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
+.coach-inner{width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;color:#fdfdfa}
+.coach h2{margin:0;font-family:var(--f-display);font-weight:800;font-size:30px;text-transform:uppercase;line-height:1}
+.coach p{margin:0 0 6px;color:#c9d1dc;font-size:15px}
+.cpill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:8px 14px;font-size:15px}
+.cpill.up{background:#f2b632;color:#1b2430}
+.cpill.left{background:#cf3e36;color:#ffffff}
+.cpill.right{background:#17905f;color:#ffffff}
+.cpill.down{background:#86a6e6;color:#0f1a3d}
+.coach-mid{display:flex;align-items:center;gap:10px}
+.coach-card{width:110px;height:146px;border-radius:12px;background-color:#fdfdfa;flex:0 0 auto;
+  background-image:linear-gradient(#e08a83,#e08a83),repeating-linear-gradient(to bottom,transparent 0 17px,#cfdcf0 17px 18px);
+  background-size:100% 2px,100% 100%;background-position:0 26px,0 28px;background-repeat:no-repeat}
+.primary.light{background:#fdfdfa;color:#1b2430;max-width:320px;margin-top:10px}
 
-/* ---------- AI connection ---------- */
-.ai-box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px}
-.ai-box input[type=password],.ai-box input[type=text]{font:inherit;font-size:15px;color:var(--ink);background:var(--desk);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%;min-width:0}
-.ai-box input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-.models{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.models label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);min-width:0}
-@media (max-width:420px){.models{grid-template-columns:1fr}}
-.check{display:flex;align-items:center;gap:8px;font-size:14px}
-.check input{width:18px;height:18px;accent-color:var(--accent)}
-.key-row{display:flex;gap:8px}
-.key-row input{flex:1}
-.ok{color:var(--keep)}
-
-/* ---------- Temperature ---------- */
-#temp{width:100%;accent-color:var(--accent);margin:2px 0}
-.temp-scale{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--muted)}
-.temp-scale b{font-family:var(--f-display);font-size:20px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink)}
-
-/* ---------- Glyphs ---------- */
-.glyph{font-size:40px;line-height:44px;display:block;margin:2px 0 4px;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
-.g-sm{display:inline-block;width:1.6em;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+/* ---------- Sheets (edit card, refine) ---------- */
+.sheet-wrap{position:fixed;inset:0;z-index:60;background:rgba(15,21,31,.5)}
+.sheet{position:absolute;top:12px;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));
+  max-width:520px;margin:0 auto;max-height:calc(100% - 24px);overflow-y:auto;background:var(--card);color:var(--ink);border-radius:16px;
+  box-shadow:0 20px 50px -10px rgba(0,0,0,.5);padding:16px;display:flex;flex-direction:column;gap:8px}
+.sheet h2{margin:0 0 4px;font-size:18px}
+.sheet textarea{background:var(--desk)}
+.sheet .btn-row{margin-top:6px}
 
 /* ---------- Result ---------- */
-.result{overflow-y:auto;gap:16px;padding-bottom:12px}
-.result-head h2{font-family:var(--f-display);font-weight:800;font-size:34px;line-height:1;margin:6px 0 8px;text-transform:uppercase;text-wrap:balance}
+.result-head{display:flex;flex-direction:column;gap:6px}
+.result-head h2{font-family:var(--f-display);font-weight:800;font-size:36px;line-height:1;margin:0;text-transform:uppercase;text-wrap:balance}
 .summary{margin:0;font-size:16px;line-height:1.55;max-width:60ch}
-.section-label{margin:0 0 -6px}
-.output-wrap{background:var(--card);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
-.output-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:2px solid var(--rule-red)}
+.tallies{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.tally{min-height:64px;border-radius:12px;border:1px solid var(--line);background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px}
+.tally[aria-pressed="true"]{border:2px solid var(--ink)}
+.tally b{display:flex;align-items:center;gap:4px;font-family:var(--f-display);font-weight:800;font-size:22px;line-height:1}
+.tally svg{width:14px;height:14px}
+.tally small{font-size:11px;white-space:nowrap}
+.tally-list{list-style:none;margin:-6px 0 0;padding:4px 14px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.tally-list li{display:flex;gap:8px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--desk-2);font-size:15px}
+.tally-list li:last-child{border-bottom:0}
+.tally-list .sl{font-size:12px;color:var(--muted)}
+.output-wrap{background:var(--card);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;flex:0 0 auto}
+.output-bar{display:flex;align-items:center;gap:8px;padding:10px 12px 10px 14px;border-bottom:2px solid var(--rule-red)}
 .output{padding:4px 16px 16px;font-size:15px;min-width:0;overflow-wrap:anywhere}
 .output h2{font-family:var(--f-display);font-size:26px;text-transform:uppercase;margin:14px 0 6px;line-height:1.05}
 .output h3{font-size:17px;margin:16px 0 4px}
@@ -212,30 +263,27 @@ textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid v
 .codeblock{overflow-x:auto;background:var(--desk-2);border-radius:8px;margin:10px 0}
 .codeblock pre{margin:0;padding:12px;font-family:var(--f-mono);font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
 .codeblock code{background:none;padding:0}
-.decks{display:flex;flex-direction:column;gap:6px}
-.decks details{background:var(--card);border-radius:10px;padding:10px 14px;border:1px solid var(--line)}
-.decks summary{cursor:pointer;font-weight:700}
-.decks ul{margin:8px 0 2px;padding:0;list-style:none;font-size:14px;display:flex;flex-direction:column;gap:4px}
-.decks li{display:flex;gap:4px;align-items:baseline}
-.btn-row{display:flex;gap:8px;flex-wrap:wrap}
-.btn-row .ghost{flex:1}
-.err{color:var(--drop)}
+
+/* ---------- Glyphs ---------- */
+.glyph{font-size:40px;line-height:44px;display:block;margin:2px 0 4px;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.g-sm{display:inline-block;width:1.6em;flex:0 0 auto;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
 
 @media (prefers-reduced-motion: reduce){
-  .card,.goal-fill{transition:none}
+  .card,.seg-bar i,.ai-row svg{transition:none}
   .dealing i{animation:none}
 }
-@media (max-height:640px){ .card-title{font-size:20px} .ctl .disc{width:48px;height:48px} .brand h1{font-size:36px} }
+@media (max-height:700px){ .card-title{font-size:20px} .ctl.big .disc{width:56px;height:56px} .goal-pct{font-size:22px} #topic{height:64px} }
+@media (max-width:360px){ .brand .mark{width:34px;height:34px} .controls{gap:12px} }
 </style>
 
 <div class="app">
 
   <!-- Calibration -->
   <section class="screen calib" id="scr-calib">
-    <div>
+    <div class="scroll" id="calib-scroll">
       <div class="brand">
         <div class="brand-main">
-          <svg class="mark" viewBox="-60 -60 120 120" width="44" height="44" aria-hidden="true">
+          <svg class="mark" viewBox="-60 -60 120 120" width="40" height="40" aria-hidden="true">
             <g><rect class="c1" x="3" y="-53" width="34" height="46" rx="6"></rect><line class="r1" x1="9" y1="-42" x2="31" y2="-42"></line></g>
             <g transform="rotate(120)"><rect x="3" y="-53" width="34" height="46" rx="6"></rect><line x1="9" y1="-42" x2="31" y2="-42"></line></g>
             <g transform="rotate(240)"><rect x="3" y="-53" width="34" height="46" rx="6"></rect><line x1="9" y1="-42" x2="31" y2="-42"></line></g>
@@ -243,159 +291,216 @@ textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid v
           </svg>
           <h1>Swipe<span>storm</span></h1>
         </div>
-        <div class="brand-side">
-          <div class="lang" role="group" aria-label="Language / Nyelv" id="lang-toggle">
-            <button type="button" data-lang="en" lang="en">EN</button><button type="button" data-lang="hu" lang="hu">HU</button>
-          </div>
-          <span class="badge" id="live-badge" data-i18n="checking">Checking…</span>
+        <div class="lang" role="group" aria-label="Language / Nyelv" id="lang-toggle">
+          <button type="button" data-lang="en" lang="en">EN</button><button type="button" data-lang="hu" lang="hu">HU</button>
         </div>
       </div>
-      <p class="lede" data-i18n="lede">Tell it what you're ideating. Swipe the cards it deals. Get a finished brief, plan, spec or handoff prompt.</p>
-    </div>
 
-    <div class="field">
-      <label class="label" for="topic" data-i18n="topicLabel">What are we ideating?</label>
-      <textarea id="topic" rows="3">A long weekend in Vienna for two, early December</textarea>
-      <div class="examples" id="examples" aria-label="Examples"></div>
-    </div>
-
-    <div class="field">
-      <span class="label" id="lbl-type" data-i18n="typeLabel">It's a…</span>
-      <div class="chips" role="group" aria-labelledby="lbl-type" data-group="type">
-        <button type="button" class="chip" data-v="app" data-i18n="type_app">App</button>
-        <button type="button" class="chip" data-v="trip" data-i18n="type_trip">Trip</button>
-        <button type="button" class="chip" data-v="event" data-i18n="type_event">Event</button>
-        <button type="button" class="chip" data-v="business" data-i18n="type_business">Business</button>
-        <button type="button" class="chip" data-v="other" data-i18n="type_other">Something else</button>
+      <div class="field">
+        <label class="label" for="topic" data-i18n="topicLabel">What are we ideating?</label>
+        <textarea id="topic" rows="3">A long weekend in Vienna for two, early December</textarea>
+        <div class="examples" id="examples" aria-label="Examples"></div>
       </div>
-    </div>
 
-    <div class="field">
-      <span class="label" id="lbl-out" data-i18n="outLabel">At the end I want…</span>
-      <div class="chips" role="group" aria-labelledby="lbl-out" data-group="output">
-        <button type="button" class="chip" data-v="brief" data-i18n-html="out_brief">Brief<small>one page to act on</small></button>
-        <button type="button" class="chip" data-v="plan" data-i18n-html="out_plan">Plan<small>steps, timeline, to-dos</small></button>
-        <button type="button" class="chip" data-v="spec" data-i18n-html="out_spec">Build spec<small>features, structure, risks</small></button>
-        <button type="button" class="chip" data-v="prompt" data-i18n-html="out_prompt">Handoff prompt<small>paste into Claude</small></button>
-      </div>
-    </div>
-
-    <div class="field">
-      <label class="label" for="temp" data-i18n="tempLabel">Practical or creative?</label>
-      <input type="range" id="temp" min="1" max="5" step="1" value="3" aria-describedby="temp-desc">
-      <div class="temp-scale"><span data-i18n="tempLow">Practical</span><b id="temp-name">Balanced</b><span data-i18n="tempHigh">Creative</span></div>
-      <p class="note" id="temp-desc">A mix of solid picks and some surprises.</p>
-    </div>
-
-    <div class="field">
-      <span class="label" id="lbl-len" data-i18n="lenLabel">Session length</span>
-      <div class="chips" role="group" aria-labelledby="lbl-len" data-group="length">
-        <button type="button" class="chip" data-v="c12" data-i18n="len_c12">12 cards</button>
-        <button type="button" class="chip" data-v="c20" data-i18n="len_c20">20 cards</button>
-        <button type="button" class="chip" data-v="c30" data-i18n="len_c30">30 cards</button>
-        <button type="button" class="chip" data-v="t3" data-i18n="len_t3">3 min</button>
-        <button type="button" class="chip" data-v="t5" data-i18n="len_t5">5 min</button>
-      </div>
-    </div>
-
-    <div class="legend" data-i18n-aria="legendAria" aria-label="Swipe directions">
-      <div class="lg lg-up" data-i18n-html="lg_up"><b>Must-have</b>locks it in</div>
-      <div class="lg lg-left" data-i18n-html="lg_left"><b>Drop</b>never again</div>
-      <div class="mini" aria-hidden="true"></div>
-      <div class="lg lg-right" data-i18n-html="lg_right"><b>Keep</b>good one</div>
-      <div class="lg lg-down" data-i18n-html="lg_down"><b>Later</b>decide at the end</div>
-    </div>
-
-    <div class="field">
-      <span class="label" id="lbl-ai" data-i18n="aiLabel">AI connection</span>
-      <div class="ai-box" id="ai-checking"><span class="note" data-i18n="aiChecking">Checking where this page is running…</span></div>
-      <div class="ai-box" id="ai-claude" hidden>
-        <span data-i18n-html="aiClaude"><b>Using your Claude account.</b> This page is running inside Claude, so the cards come from your own Claude plan. No key needed.</span>
-      </div>
-      <div id="ai-byok" hidden style="display:flex;flex-direction:column;gap:8px">
-        <div class="chips" role="group" aria-labelledby="lbl-ai" id="provider-chips">
-          <button type="button" class="chip" data-p="anthropic" data-i18n="prov_anthropic">Anthropic key</button>
-          <button type="button" class="chip" data-p="openrouter" data-i18n="prov_openrouter">OpenRouter key</button>
-          <button type="button" class="chip" data-p="sample" data-i18n="prov_sample">No key: sample deck</button>
+      <div class="field">
+        <span class="label" id="lbl-type" data-i18n="typeLabel">It's a…</span>
+        <div class="seg-row" role="group" aria-labelledby="lbl-type" data-group="type">
+          <button type="button" class="chip" data-v="app" data-i18n="type_app">App</button>
+          <button type="button" class="chip" data-v="trip" data-i18n="type_trip">Trip</button>
+          <button type="button" class="chip" data-v="event" data-i18n="type_event">Event</button>
+          <button type="button" class="chip wide" data-v="business" data-i18n="type_business">Business</button>
+          <button type="button" class="chip" data-v="other" data-i18n="type_other">Other</button>
         </div>
-        <div class="ai-box" id="key-box">
-          <label class="label" for="api-key" id="key-label">Anthropic API key</label>
-          <div class="key-row">
-            <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…">
-            <button type="button" class="ghost" id="show-key" aria-pressed="false">Show</button>
-          </div>
-          <div class="models">
-            <label><span data-i18n="fastModel">Fast model, for cards</span><input id="m-fast" type="text" list="model-list" autocomplete="off" spellcheck="false"></label>
-            <label><span data-i18n="writerModel">Writer model, for the output</span><input id="m-main" type="text" list="model-list" autocomplete="off" spellcheck="false"></label>
-          </div>
-          <datalist id="model-list"></datalist>
-          <label class="check"><input type="checkbox" id="remember"> <span data-i18n="remember">Remember the key on this device</span></label>
-          <div class="btn-row"><button type="button" class="ghost" id="test-key" data-i18n="testKey">Test connection</button></div>
-          <p class="note" id="key-note">Your key stays in this browser and is sent only to Anthropic.</p>
+      </div>
+
+      <div class="field">
+        <span class="label" id="lbl-out" data-i18n="outLabel">At the end I want…</span>
+        <div class="tiles" role="group" aria-labelledby="lbl-out" data-group="output">
+          <button type="button" class="chip tile" data-v="brief" data-i18n-html="out_brief">Brief<small>one page to act on</small></button>
+          <button type="button" class="chip tile" data-v="plan" data-i18n-html="out_plan">Plan<small>steps, timeline, to-dos</small></button>
+          <button type="button" class="chip tile" data-v="spec" data-i18n-html="out_spec">Build spec<small>features, structure, risks</small></button>
+          <button type="button" class="chip tile" data-v="prompt" data-i18n-html="out_prompt">Handoff prompt<small>paste into Claude</small></button>
         </div>
-        <p class="note" id="sample-note" hidden data-i18n="sampleNote">Runs a built-in Vienna weekend deck with no AI, so you can try the swiping.</p>
+      </div>
+
+      <div class="field tight">
+        <div class="label-row"><label class="label" for="temp" data-i18n="tempLabel">Practical or creative?</label><b class="temp-name" id="temp-name">Balanced</b></div>
+        <input type="range" id="temp" min="1" max="5" step="1" value="3" aria-describedby="temp-desc">
+        <p class="note" id="temp-desc">A mix of solid picks and some surprises.</p>
+      </div>
+
+      <div class="field">
+        <span class="label" id="lbl-len" data-i18n="lenLabel">Session length</span>
+        <div class="segmented" role="group" aria-labelledby="lbl-len" data-group="length">
+          <button type="button" class="chip" data-v="c12" data-i18n="len_c12">12</button>
+          <button type="button" class="chip" data-v="c20" data-i18n="len_c20">20 cards</button>
+          <button type="button" class="chip" data-v="c30" data-i18n="len_c30">30</button>
+          <button type="button" class="chip" data-v="t3" data-i18n="len_t3">3 min</button>
+          <button type="button" class="chip" data-v="t5" data-i18n="len_t5">5 min</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <button type="button" class="ai-row" id="ai-row" aria-expanded="false" aria-controls="ai-panel">
+          <span class="dot" id="ai-dot"></span>
+          <span class="ai-row-text" id="ai-row-text" data-i18n="aiChecking">Checking where this page is running…</span>
+          <span class="ai-row-act" id="ai-row-act" data-i18n="change">Change</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+        </button>
+        <div id="ai-panel" hidden>
+          <div class="ai-box" id="ai-claude" hidden>
+            <span data-i18n-html="aiClaude"><b>Using your Claude account.</b> This page is running inside Claude, so the cards come from your own Claude plan. No key needed.</span>
+          </div>
+          <div id="ai-byok" hidden class="byok">
+            <div class="chips" role="group" aria-label="AI" id="provider-chips">
+              <button type="button" class="chip" data-p="anthropic" data-i18n="prov_anthropic">Anthropic key</button>
+              <button type="button" class="chip" data-p="openrouter" data-i18n="prov_openrouter">OpenRouter key</button>
+              <button type="button" class="chip" data-p="sample" data-i18n="prov_sample">No key: sample deck</button>
+            </div>
+            <div class="ai-box" id="key-box">
+              <label class="label" for="api-key" id="key-label">Anthropic API key</label>
+              <div class="key-row">
+                <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…">
+                <button type="button" class="ghost" id="show-key" aria-pressed="false">Show</button>
+              </div>
+              <div class="models">
+                <label><span data-i18n="fastModel">Fast model, for cards</span><input id="m-fast" type="text" list="model-list" autocomplete="off" spellcheck="false"></label>
+                <label><span data-i18n="writerModel">Writer model, for the output</span><input id="m-main" type="text" list="model-list" autocomplete="off" spellcheck="false"></label>
+              </div>
+              <datalist id="model-list"></datalist>
+              <label class="check"><input type="checkbox" id="remember"> <span data-i18n="remember">Remember the key on this device</span></label>
+              <div class="btn-row"><button type="button" class="ghost" id="test-key" data-i18n="testKey">Test connection</button></div>
+              <p class="note" id="key-note">Your key stays in this browser and is sent only to Anthropic.</p>
+            </div>
+            <p class="note" id="sample-note" hidden data-i18n="sampleNote">Runs a built-in Vienna weekend deck with no AI, so you can try the swiping.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="field" id="recent-field" hidden>
+        <span class="label" data-i18n="recentLabel">Recent sessions</span>
+        <ul class="recent" id="recent"></ul>
       </div>
     </div>
 
-    <button class="primary" id="start" type="button" data-i18n="start">Deal the cards</button>
-    <p class="note" id="calib-note" data-i18n="calibNote">Each card fills one part of the plan. The goal meter shows how many parts are covered.</p>
+    <footer class="foot">
+      <button class="primary" id="start" type="button" data-i18n="start">Deal the cards</button>
+      <p class="note center" id="start-summary">20 cards · Handoff prompt at the end</p>
+    </footer>
   </section>
 
   <!-- Swiping -->
   <section class="screen" id="scr-swipe" hidden>
     <div class="top">
       <div class="top-row">
-        <svg class="mark" viewBox="-60 -60 120 120" width="26" height="26" aria-hidden="true">
-          <g><rect class="c1" x="3" y="-53" width="34" height="46" rx="6"></rect></g>
-          <g transform="rotate(120)"><rect x="3" y="-53" width="34" height="46" rx="6"></rect></g>
-          <g transform="rotate(240)"><rect x="3" y="-53" width="34" height="46" rx="6"></rect></g>
-        </svg>
-        <span class="name">Swipestorm</span>
-        <span class="badge" id="mode-badge">Live</span>
-        <span class="spacer"></span>
+        <button type="button" class="icon-btn" id="back" data-i18n-aria="back" aria-label="Back to setup"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></button>
         <span class="counter" id="counter">Card 1 / 20</span>
+        <span class="badge" id="mode-badge" hidden>Sample deck</span>
         <button class="finish" id="finish" type="button">Finish</button>
       </div>
-      <div class="goal">
-        <div class="goal-track" role="progressbar" data-i18n-aria="goalAria" aria-label="Goal" aria-valuemin="0" aria-valuemax="100" id="goal-bar"><div class="goal-fill" id="goal-fill"></div></div>
-        <span class="goal-pct" id="goal-pct">0%</span>
-      </div>
-      <div class="slots" id="slots"></div>
+      <div class="goal-row"><span class="goal-pct" id="goal-pct">0%</span><span class="note" data-i18n="goalCovered">of the plan covered</span></div>
+      <div class="segs" id="slots" role="list" data-i18n-aria="goalAria" aria-label="Plan coverage"></div>
       <div class="banner" id="banner" hidden></div>
     </div>
     <div class="stack" id="stack"></div>
     <div class="controls" id="controls">
-      <button class="ctl drop" data-dir="left" type="button" data-i18n-aria="ctl_drop_aria" aria-label="Drop (left)"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span><span data-i18n="v_drop">Drop</span></button>
-      <button class="ctl hold" data-dir="down" type="button" data-i18n-aria="ctl_hold_aria" aria-label="Later (down)"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span><span data-i18n="v_hold">Later</span></button>
-      <button class="ctl lock" data-dir="up" type="button" data-i18n-aria="ctl_lock_aria" aria-label="Must-have (up)"><span class="disc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2l2.6 5.5 6 .7-4.4 4.1 1.2 5.9L12 16.5l-5.4 2.9 1.2-5.9L3.4 9.4l6-.7z"/></svg></span><span data-i18n="v_lock">Must-have</span></button>
-      <button class="ctl keep" data-dir="right" type="button" data-i18n-aria="ctl_keep_aria" aria-label="Keep (right)"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span data-i18n="v_keep">Keep</span></button>
+      <button class="ctl big drop" data-dir="left" type="button" data-i18n-aria="ctl_drop_aria" aria-label="Drop (left)"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span><span data-i18n="v_drop">Drop</span></button>
+      <div class="mid">
+        <button class="ctl pill lock" data-dir="up" type="button" data-i18n-aria="ctl_lock_aria" aria-label="Must-have (up)"><span class="pdisc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2l2.6 5.5 6 .7-4.4 4.1 1.2 5.9L12 16.5l-5.4 2.9 1.2-5.9L3.4 9.4l6-.7z"/></svg></span><span data-i18n="v_lock">Must-have</span></button>
+        <button class="ctl pill hold" data-dir="down" type="button" data-i18n-aria="ctl_hold_aria" aria-label="Later (down)"><span class="pdisc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span><span data-i18n="v_hold">Later</span></button>
+      </div>
+      <button class="ctl big keep" data-dir="right" type="button" data-i18n-aria="ctl_keep_aria" aria-label="Keep (right)"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span data-i18n="v_keep">Keep</span></button>
     </div>
     <div class="subctl"><button class="undo" id="undo" type="button" disabled data-i18n="undo">Undo last swipe</button></div>
   </section>
 
   <!-- Result -->
   <section class="screen result" id="scr-result" hidden>
-    <div class="result-head">
-      <span class="label" data-i18n="summaryLabel">Summary</span>
-      <h2 id="res-name">Your session</h2>
-      <p class="summary" id="res-summary">Summarising…</p>
-    </div>
-    <p class="label section-label" data-i18n="cardsLabel">Your cards</p>
-    <div class="decks" id="decks"></div>
-    <p class="label section-label" id="res-kind">Handoff prompt</p>
-    <div class="output-wrap">
-      <div class="output-bar">
-        <span class="label" id="out-status">Writing…</span>
-        <span class="spacer"></span>
-        <button class="ghost" id="copy" type="button" disabled data-i18n="copy">Copy</button>
+    <div class="scroll" id="result-scroll">
+      <p class="label" id="res-done">Session done</p>
+      <div class="result-head">
+        <span class="label" data-i18n="summaryLabel">Summary</span>
+        <h2 id="res-name">Your session</h2>
+        <p class="summary" id="res-summary">Summarising…</p>
       </div>
-      <div class="output" id="output"></div>
+      <div class="tallies" id="tallies" role="group" data-i18n-aria="cardsLabel" aria-label="Your cards"></div>
+      <ul class="tally-list" id="tally-list"></ul>
+      <div class="output-wrap">
+        <div class="output-bar">
+          <span class="label" id="res-kind">Handoff prompt</span>
+          <span class="spacer"></span>
+          <span class="label" id="out-status">Writing…</span>
+          <button class="ghost small" id="regen" type="button" disabled data-i18n="regen">Rewrite</button>
+        </div>
+        <div class="output" id="output"></div>
+      </div>
+      <div class="btn-row">
+        <button class="ghost" id="share" type="button" disabled>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg><span data-i18n="share">Share</span></button>
+        <button class="ghost" id="download" type="button" disabled>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg><span data-i18n="download">Download</span></button>
+      </div>
+      <p class="note center" id="res-note" role="status"></p>
     </div>
-    <div class="btn-row">
-      <button class="ghost" id="regen" type="button" disabled data-i18n="regen">Write it again</button>
-      <button class="ghost" id="again" type="button" data-i18n="again">New session</button>
-    </div>
+    <footer class="foot row">
+      <button class="primary" id="copy" type="button" disabled>Copy</button>
+      <button class="ghost" id="refine" type="button" disabled data-i18n="refine">Refine</button>
+      <button class="ghost" id="again" type="button" data-i18n="again">New</button>
+    </footer>
   </section>
+</div>
+
+<!-- First swipe: direction guide (shown once per browser) -->
+<div class="coach" id="coach" hidden role="dialog" aria-modal="true" aria-labelledby="coach-title">
+  <div class="coach-inner">
+    <h2 id="coach-title" data-i18n="coachTitle">Swipe in four directions</h2>
+    <p data-i18n="coachSub">Or use the buttons under the card. Shown once.</p>
+    <span class="cpill up" data-i18n-html="coach_up"><b>Must-have</b> locks it in</span>
+    <div class="coach-mid">
+      <span class="cpill left" data-i18n-html="coach_left"><b>Drop</b></span>
+      <div class="coach-card" aria-hidden="true"></div>
+      <span class="cpill right" data-i18n-html="coach_right"><b>Keep</b></span>
+    </div>
+    <span class="cpill down" data-i18n-html="coach_down"><b>Later</b> decide at the end</span>
+    <button type="button" class="primary light" id="coach-ok" data-i18n="gotIt">Got it</button>
+  </div>
+</div>
+
+<!-- Sheets: pinned to the top of the visible screen so a phone keyboard can't cover them -->
+<div class="sheet-wrap" id="edit-sheet" hidden>
+  <form class="sheet" id="edit-form" role="dialog" aria-modal="true" aria-labelledby="edit-h">
+    <h2 id="edit-h" data-i18n="editTitle">Edit card</h2>
+    <label class="label" for="edit-title" data-i18n="fieldTitle">Title</label>
+    <textarea id="edit-title" rows="2"></textarea>
+    <label class="label" for="edit-detail" data-i18n="fieldDetail">Detail</label>
+    <textarea id="edit-detail" rows="3"></textarea>
+    <div class="btn-row">
+      <button type="button" class="ghost" id="edit-cancel" data-i18n="cancel">Cancel</button>
+      <button type="submit" class="primary" data-i18n="save">Save</button>
+    </div>
+  </form>
+</div>
+
+<div class="sheet-wrap" id="refine-sheet" hidden>
+  <form class="sheet" id="refine-form" role="dialog" aria-modal="true" aria-labelledby="refine-h">
+    <h2 id="refine-h" data-i18n="refineTitle">Refine this session</h2>
+    <span class="label" id="lbl-rout" data-i18n="refineOut">Output</span>
+    <div class="tiles" role="group" aria-labelledby="lbl-rout" id="refine-out"></div>
+    <span class="label" id="lbl-rcards" data-i18n="refineCards">More cards</span>
+    <div class="segmented four" role="group" aria-labelledby="lbl-rcards" id="refine-cards">
+      <button type="button" class="chip" data-n="0" data-i18n="noNew">Rewrite only</button>
+      <button type="button" class="chip" data-n="6">6</button>
+      <button type="button" class="chip" data-n="10">10</button>
+      <button type="button" class="chip" data-n="15">15</button>
+    </div>
+    <p class="note" id="refine-sample" hidden data-i18n="noSampleLeft">The sample deck has no cards left, so only a rewrite is possible.</p>
+    <label class="label" for="refine-focus" data-i18n="refineFocus">Anything to focus on? (optional)</label>
+    <textarea id="refine-focus" rows="2"></textarea>
+    <div class="btn-row">
+      <button type="button" class="ghost" id="refine-cancel" data-i18n="cancel">Cancel</button>
+      <button type="submit" class="primary" data-i18n="startRefine">Start refining</button>
+    </div>
+  </form>
 </div>
 
 <script>
@@ -554,6 +659,44 @@ const STR = {
     },
   },
 };
+Object.assign(STR.en, {
+  type_other: "Other", len_c12: "12", len_c20: "20 cards", len_c30: "30",
+  cardsN: n => `${n} cards`, minN: n => `${n} min`, startSummary: (len, out) => `${len} · ${out} at the end`,
+  aiRowClaude: "Your Claude account", aiRowKey: (n, ok) => ok ? `${n} · key set` : `${n} · key needed`, change: "Change", done: "Done",
+  recentLabel: "Recent sessions", deleteAria: n => `Delete ${n}`, savedNote: "Saved on this device.",
+  back: "Back to setup", leaveQ: "Leave this session? Your swipes so far will be lost.", leave: "Leave", stay: "Stay",
+  goalCovered: "of the plan covered", goalAria: "Plan coverage",
+  coachTitle: "Swipe in four directions", coachSub: "Or use the buttons under the card. Shown once.",
+  coach_up: "<b>Must-have</b> locks it in", coach_left: "<b>Drop</b>", coach_right: "<b>Keep</b>", coach_down: "<b>Later</b> decide at the end", gotIt: "Got it",
+  editTitle: "Edit card", fieldTitle: "Title", fieldDetail: "Detail", cancel: "Cancel",
+  doneHead: n => `Session done · ${n} cards`, roundBadge: r => `round ${r}`,
+  t_lock: "Must-have", t_keep: "Kept", t_hold: "Undecided", t_drop: "Dropped", emptyList: "No cards here.",
+  copyPrompt: "Copy prompt", refine: "Refine", again: "New", regen: "Rewrite", share: "Share", download: "Download",
+  copiedShare: "Copied. Paste it wherever you want to share it.", downloaded: "Downloaded.", dlDeclined: "Download cancelled.", dlFailed: "The download didn't work. Use Copy instead.",
+  refineTitle: "Refine this session", refineOut: "Output", refineCards: "More cards", noNew: "Rewrite only",
+  refineFocus: "Anything to focus on? (optional)", startRefine: "Start refining",
+  noSampleLeft: "The sample deck has no cards left, so only a rewrite is possible.",
+  noAiCards: "New cards need an AI connection, so only a rewrite is possible.",
+});
+Object.assign(STR.hu, {
+  type_other: "Egyéb", len_c12: "12", len_c20: "20 kártya", len_c30: "30",
+  cardsN: n => `${n} kártya`, minN: n => `${n} perc`, startSummary: (len, out) => `${len} · a végén: ${out}`,
+  aiRowClaude: "Saját Claude-fiók", aiRowKey: (n, ok) => ok ? `${n} · kulcs megadva` : `${n} · kulcs kell`, change: "Módosít", done: "Kész",
+  recentLabel: "Korábbi ötletelések", deleteAria: n => `${n} törlése`, savedNote: "Elmentve ezen az eszközön.",
+  back: "Vissza a beállításokhoz", leaveQ: "Kilépsz? Az eddigi húzásaid elvesznek.", leave: "Kilépés", stay: "Maradok",
+  goalCovered: "a terv lefedve", goalAria: "A terv lefedettsége",
+  coachTitle: "Húzd a kártyát négy irányba", coachSub: "Vagy használd a kártya alatti gombokat. Csak most jelenik meg.",
+  coach_up: "<b>Kötelező</b> fixen bent marad", coach_left: "<b>Elvet</b>", coach_right: "<b>Megtart</b>", coach_down: "<b>Később</b> a végén döntesz", gotIt: "Értem",
+  editTitle: "Kártya szerkesztése", fieldTitle: "Cím", fieldDetail: "Részletek", cancel: "Mégse",
+  doneHead: n => `Kész · ${n} kártya`, roundBadge: r => `${r}. kör`,
+  t_lock: "Kötelező", t_keep: "Megtartva", t_hold: "Eldöntetlen", t_drop: "Elvetve", emptyList: "Itt nincs kártya.",
+  copyPrompt: "Prompt másolása", refine: "Finomítás", again: "Új", regen: "Újraírás", share: "Megosztás", download: "Letöltés",
+  copiedShare: "Kimásolva. Illeszd be oda, ahol meg akarod osztani.", downloaded: "Letöltve.", dlDeclined: "Letöltés megszakítva.", dlFailed: "A letöltés nem sikerült. Használd a Másolás gombot.",
+  refineTitle: "Ötletelés finomítása", refineOut: "Eredmény típusa", refineCards: "További kártyák", noNew: "Csak újraírás",
+  refineFocus: "Mire figyeljen jobban? (nem kötelező)", startRefine: "Finomítás indítása",
+  noSampleLeft: "A mintapakliban nincs több kártya, csak újraírás lehetséges.",
+  noAiCards: "Új kártyákhoz AI-kapcsolat kell, így csak újraírás lehetséges.",
+});
 const LANG_KEY = "swipestorm.lang";
 let lang = "en";
 try { const l = localStorage.getItem(LANG_KEY); if (l === "hu" || l === "en") lang = l; } catch {}
@@ -623,6 +766,7 @@ const model = tier => (AI.models[AI.provider] || {})[tier === "quick" ? "fast" :
 const aiLive = () => AI.mode === "claude" || (AI.mode === "byok" && AI.provider !== "sample" && !!(AI.keys[AI.provider] || "").trim());
 
 const aiReady = (async () => {
+  await Promise.resolve();   // let the rest of the script finish declaring first
   let s = null;
   if (window.claude && typeof window.claude.use === "function") {
     try { s = await window.claude.use("sample"); } catch { s = null; }
@@ -637,36 +781,43 @@ const aiReady = (async () => {
       AI.remember = !!saved.remember;
       AI.keys = saved.keys || {};
     }
+    if (AI.provider !== "sample" && !aiLive()) aiPanelOpen = true;
   }
   renderAI();
 })();
 
+let aiPanelOpen = false;
 function renderAI() {
-  $("#ai-checking").hidden = true;
+  const L = T();
+  $("#ai-panel").hidden = !aiPanelOpen;
+  $("#ai-row").setAttribute("aria-expanded", String(aiPanelOpen));
+  $("#ai-row-act").textContent = aiPanelOpen ? L.done : L.change;
+  if (AI.mode === "pending") return;
   $("#ai-claude").hidden = AI.mode !== "claude";
   $("#ai-byok").hidden = AI.mode !== "byok";
-  const b = $("#live-badge");
-  if (AI.mode === "claude") { b.textContent = T().b_claude; b.classList.add("live"); return; }
+  const dot = $("#ai-dot"), txt = $("#ai-row-text");
+  if (AI.mode === "claude") { dot.className = "dot ok"; txt.textContent = L.aiRowClaude; return; }
   const p = AI.provider, isKey = p !== "sample";
   document.querySelectorAll("#provider-chips .chip").forEach(c => c.setAttribute("aria-pressed", String(c.dataset.p === p)));
   $("#key-box").hidden = !isKey;
   $("#sample-note").hidden = isKey;
   if (isKey) {
     const P = PROVIDERS[p];
-    $("#key-label").textContent = T().keyLabel(P.name);
+    $("#key-label").textContent = L.keyLabel(P.name);
     $("#api-key").placeholder = P.keyHint;
-    $("#api-key").value = AI.keys[p] || "";
+    if ($("#api-key").value !== (AI.keys[p] || "")) $("#api-key").value = AI.keys[p] || "";
     $("#m-fast").value = model("quick");
     $("#m-main").value = model("default");
     $("#remember").checked = AI.remember;
-    $("#key-note").textContent = T().keyNote(P.name, AI.remember);
-    $("#show-key").textContent = $("#api-key").type === "password" ? T().show : T().hide;
+    $("#key-note").textContent = L.keyNote(P.name, AI.remember);
+    $("#show-key").textContent = $("#api-key").type === "password" ? L.show : L.hide;
     if (p === "openrouter") loadOpenRouterModels();
     else $("#model-list").innerHTML = ["claude-haiku-5-5","claude-sonnet-5-5","claude-opus-5-5"].map(m => `<option value="${m}">`).join("");
   }
-  b.textContent = !isKey ? T().b_sample : aiLive() ? P_name(p) : T().b_keyNeeded;
-  b.classList.toggle("live", aiLive());
+  dot.className = "dot " + (!isKey ? "" : aiLive() ? "ok" : "warn");
+  txt.textContent = !isKey ? L.prov_sample : L.aiRowKey(P_name(p), aiLive());
 }
+$("#ai-row").addEventListener("click", () => { aiPanelOpen = !aiPanelOpen; renderAI(); });
 const P_name = p => PROVIDERS[p] ? PROVIDERS[p].name : T().b_sample;
 
 let orModelsLoaded = false;
@@ -684,7 +835,7 @@ $("#provider-chips").addEventListener("click", e => {
   const c = e.target.closest(".chip"); if (!c) return;
   AI.provider = c.dataset.p; store.save(); renderAI();
 });
-$("#api-key").addEventListener("input", e => { AI.keys[AI.provider] = e.target.value.trim(); store.save(); renderAI(); $("#api-key").focus(); });
+$("#api-key").addEventListener("input", e => { AI.keys[AI.provider] = e.target.value.trim(); store.save(); renderAI(); });
 $("#show-key").addEventListener("click", () => {
   const i = $("#api-key"), show = i.type === "password";
   i.type = show ? "text" : "password"; $("#show-key").textContent = show ? T().hide : T().show; $("#show-key").setAttribute("aria-pressed", String(show));
@@ -822,8 +973,8 @@ const S = {
   swiped: 0, fetching: false, fetchErr: null, endAt: 0, timer: 0, uid: 0,
   outText: "", outCtl: null,
 };
-const budget = () => S.cfg.length[0] === "c" ? +S.cfg.length.slice(1) : 0;
-const minutes = () => S.cfg.length[0] === "t" ? +S.cfg.length.slice(1) : 0;
+const budget = () => S.limit || 0;
+const minutes = () => S.timed ? +S.cfg.length.slice(1) : 0;
 
 /* ---------- calibration UI ---------- */
 function syncChips() {
@@ -831,11 +982,16 @@ function syncChips() {
     const key = g.dataset.group;
     g.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", String(c.dataset.v === S.cfg[key])));
   });
+  if (typeof syncSummary === "function") syncSummary();
 }
 document.querySelectorAll("[data-group]").forEach(g => g.addEventListener("click", e => {
   const c = e.target.closest(".chip"); if (!c) return;
   S.cfg[g.dataset.group] = c.dataset.v; syncChips();
 }));
+function syncSummary() {
+  const L = T(), len = S.cfg.length, n = +len.slice(1);
+  $("#start-summary").textContent = L.startSummary(len[0] === "c" ? L.cardsN(n) : L.minN(n), OUT_NAME[S.cfg.output]);
+}
 $("#examples").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
   $("#topic").value = b.dataset.ex; S.cfg.type = b.dataset.type; syncChips();
@@ -881,7 +1037,7 @@ function batchPrompt(n) {
   const all = S.history.map(h => h.card).concat(S.deck, S.held);
   const existing = all.map(c => c.title).slice(-60);
   const usedGlyphs = [...new Set(all.map(c => c.glyph))].join(" ");
-  return `You are dealing the next cards in a swipe brainstorming session (right = keep, left = drop, up = must-have, down = later).\n\n${sessionHeader()}\n\n${decisionsBlock()}\n\nWrite ${n} new cards.\n- Mostly target the least-covered slots.\n- Build on the must-haves: go deeper and more specific (variants, details, how to make them work).\n- Avoid anything resembling the dropped cards; read the drops as a signal of taste.\n- Don't repeat these titles: ${existing.join(" | ") || "(none)"}\n- Glyphs already used: ${usedGlyphs || "(none)"}\n${cardRules()}\n\nReply with only a JSON array of cards: [${cardShape()}]`;
+  return `You are dealing the next cards in a swipe brainstorming session (right = keep, left = drop, up = must-have, down = later).\n\n${sessionHeader()}\n\n${decisionsBlock()}\n${refineLine()}\nWrite ${n} new cards.\n- Mostly target the least-covered slots.\n- Build on the must-haves: go deeper and more specific (variants, details, how to make them work).\n- Avoid anything resembling the dropped cards; read the drops as a signal of taste.\n- Don't repeat these titles: ${existing.join(" | ") || "(none)"}\n- Glyphs already used: ${usedGlyphs || "(none)"}\n${cardRules()}\n\nReply with only a JSON array of cards: [${cardShape()}]`;
 }
 function outputSpec() {
   const names = S.slots.map(s => s.name).join(", ");
@@ -892,8 +1048,12 @@ function outputSpec() {
     default: return `One self-contained prompt the person will paste into an AI assistant (such as Claude) to build or plan this. Address the assistant directly. State the goal, every must-have, the kept elements, constraints, what to avoid (from the drops), open questions to resolve, and exactly what output to produce. Put the whole prompt inside ONE fenced code block and write nothing outside it.`;
   }
 }
+function refineLine() {
+  if ((S.round || 1) < 2) return "";
+  return `\nThis is refinement round ${S.round}: the person finished a first pass and wants to go deeper. Prefer sharper variants of the must-haves, options for the weakest slots, and choices that settle the parked items.${S.focus ? ` The person asked to focus on: "${S.focus}".` : ""}\n`;
+}
 function outputPrompt() {
-  return `Turn this finished swipe-brainstorming session into the final deliverable.\n\n${sessionHeader()}\n\n${decisionsBlock()}\n\nMust-haves are non-negotiable. Kept items are wanted but flexible. Parked items are still undecided: list them as open questions. Never include dropped items.\n\nDeliverable: ${outputSpec()}\nUse Markdown. No preamble, no closing remarks.`;
+  return `Turn this finished swipe-brainstorming session into the final deliverable.\n\n${sessionHeader()}\n\n${decisionsBlock()}\n\nMust-haves are non-negotiable. Kept items are wanted but flexible. Parked items are still undecided: list them as open questions. Never include dropped items.${S.focus ? `\nThe person asked to focus on: "${S.focus}".` : ""}\n\nDeliverable: ${outputSpec()}\nUse Markdown. No preamble, no closing remarks.`;
 }
 function summaryPrompt() {
   return `Summarise what came out of this swipe brainstorming session.\n\n${sessionHeader()}\n\n${decisionsBlock()}\n\nReply with only JSON:\n{"name":"<a 1-4 word name for the result>","summary":"<2-3 plain sentences: what the result is, its defining must-haves, and what is still open. No praise, no scoring.>"}`;
@@ -967,17 +1127,23 @@ async function startSession() {
   const topic = $("#topic").value.trim();
   if (!topic) { $("#topic").focus(); return; }
   autoLang(topic);
-  Object.assign(S, { cfg: { ...S.cfg, topic }, slots: [], deck: [], history: [], held: [], swiped: 0, fetching: false, fetchErr: null, phase: "swipe" });
+  const len = S.cfg.length;
+  Object.assign(S, { cfg: { ...S.cfg, topic }, slots: [], deck: [], history: [], held: [], swiped: 0, fetching: false, fetchErr: null, phase: "swipe",
+    limit: len[0] === "c" ? +len.slice(1) : 0, timed: len[0] === "t", round: 1, focus: "", runId: Date.now(), name: "", summary: "", outText: "",
+    lastFirst: null, leaving: false, demo: false, tally: null });
   $("#start").disabled = true; $("#start").textContent = T().starting;
   await aiReady;
   $("#start").disabled = false; $("#start").textContent = T().start;
   if (AI.mode === "byok" && AI.provider !== "sample" && !aiLive()) {
     S.phase = "calib";
+    aiPanelOpen = true; renderAI();
     $("#key-note").innerHTML = `<span class="err">${esc(T().pasteYour(P_name(AI.provider)))}</span>`;
-    $("#api-key").focus(); return;
+    $("#ai-row").scrollIntoView({ block: "start", behavior: "smooth" });
+    $("#api-key").focus({ preventScroll: true }); return;
   }
   S.live = aiLive();
   show("swipe");
+  maybeCoach();
   if (minutes()) { S.endAt = Date.now() + minutes() * 60000; clearInterval(S.timer); S.timer = setInterval(tick, 1000); }
   if (!S.live) { loadDemo(); return; }
   S.fetching = true; render();
@@ -992,7 +1158,7 @@ async function startSession() {
   S.fetching = false; render(); ensureDeck();
 }
 function loadDemo() {
-  S.live = false; S.fetchErr = null; S.fetching = false;
+  S.live = false; S.demo = true; S.fetchErr = null; S.fetching = false;
   if (!S.slots.length) S.slots = DEMO[lang].slots.map(s => ({ ...s }));
   S.deck = DEMO[lang].cards.map(([slot, kind, glyph, title, detail]) => mkCard({ slot, kind, glyph, title, detail }));
   render();
@@ -1063,29 +1229,77 @@ function renderCounter() {
 }
 function render() {
   if (S.phase !== "swipe" && S.phase !== "review") return;
-  const review = S.phase === "review";
-  $("#mode-badge").textContent = !S.live ? T().b_sample : AI.mode === "claude" ? T().b_claude : P_name(AI.provider);
-  $("#mode-badge").classList.toggle("live", S.live);
+  const review = S.phase === "review", L = T();
+  const mb = $("#mode-badge"); mb.hidden = S.live; mb.textContent = L.b_sample;
   renderCounter();
   const g = Math.round(goal() * 100);
-  $("#goal-fill").style.width = g + "%";
   $("#goal-pct").textContent = g + "%";
-  $("#goal-bar").setAttribute("aria-valuenow", g);
   $("#finish").classList.toggle("ready", g >= 100);
-  $("#finish").textContent = review ? T().skip : T().finish;
-  $("#slots").innerHTML = S.slots.map(s => {
-    const pts = slotScore(s), lockPts = S.history.filter(h => h.card.slot === s.id && h.verdict === "lock").length * 2;
-    const pips = Array.from({ length: TARGET }, (_, i) => `<i class="pip ${i < Math.min(pts, TARGET) ? (i < lockPts ? "on lock" : "on") : ""}"></i>`).join("");
-    return `<span class="slot ${pts >= TARGET ? "full" : ""}">${esc(s.name)}<span class="pips" aria-label="${esc(T().pipsAria(Math.min(pts, TARGET), TARGET))}">${pips}</span></span>`;
-  }).join("");
+  $("#finish").textContent = review ? L.skip : L.finish;
+  const segs = $("#slots");
+  segs.style.gridTemplateColumns = `repeat(${Math.max(1, S.slots.length)}, minmax(0, 1fr))`;
+  segs.innerHTML = S.slots.map(sl => { const f = Math.round(fill(sl) * 100);
+      return `<div class="seg-bar ${f >= 100 ? "full" : ""}" role="listitem" aria-label="${esc(sl.name)}: ${f}%"><i style="width:${f}%"></i></div>`; }).join("")
+    + S.slots.map(sl => { const full = fill(sl) >= 1; return `<span class="seg-lbl ${full ? "full" : ""}" aria-hidden="true">${esc(sl.name)}${full ? " ✓" : ""}</span>`; }).join("");
   const banner = $("#banner");
-  if (review) { banner.hidden = false; banner.innerHTML = T().bannerReview; }
-  else if (g >= 100) { banner.hidden = false; banner.textContent = T().bannerFull; }
+  if (S.leaving) {
+    banner.hidden = false;
+    banner.innerHTML = `<span>${esc(L.leaveQ)}</span><div class="btn-row"><button type="button" class="ghost small" data-a="stay">${esc(L.stay)}</button><button type="button" class="ghost small" data-a="leave">${esc(L.leave)}</button></div>`;
+  }
+  else if (review) { banner.hidden = false; banner.innerHTML = L.bannerReview; }
+  else if (g >= 100) { banner.hidden = false; banner.textContent = L.bannerFull; }
   else banner.hidden = true;
   document.querySelector('.ctl.hold').disabled = review;
   $("#undo").disabled = !S.lastFirst || review;
   renderStack();
 }
+function leaveSession() {
+  S.leaving = false; clearInterval(S.timer);
+  S.phase = "calib"; show("calib"); renderRecent();
+}
+$("#back").addEventListener("click", () => {
+  if (!S.history.length && !S.held.length) { leaveSession(); return; }
+  S.leaving = !S.leaving; render();
+});
+$("#banner").addEventListener("click", e => {
+  const a = e.target.closest("button")?.dataset.a; if (!a) return;
+  if (a === "stay") { S.leaving = false; render(); }
+  if (a === "leave") leaveSession();
+});
+
+/* ---------- first-swipe guide ---------- */
+const COACH_KEY = "swipestorm.coach.v1";
+function maybeCoach() {
+  let seen = false; try { seen = localStorage.getItem(COACH_KEY) === "1"; } catch {}
+  if (seen) return;
+  $("#coach").hidden = false; $("#coach-ok").focus();
+}
+$("#coach-ok").addEventListener("click", () => {
+  $("#coach").hidden = true; try { localStorage.setItem(COACH_KEY, "1"); } catch {}
+});
+
+/* ---------- sheets: pinned to the top of the visible viewport so the keyboard can't squeeze them ---------- */
+function placeSheets() {
+  const vv = window.visualViewport;
+  document.querySelectorAll(".sheet-wrap:not([hidden]) .sheet").forEach(sh => {
+    if (vv) { sh.style.top = Math.round(vv.offsetTop + 12) + "px"; sh.style.maxHeight = Math.round(vv.height - 24) + "px"; }
+  });
+}
+if (window.visualViewport) { visualViewport.addEventListener("resize", placeSheets); visualViewport.addEventListener("scroll", placeSheets); }
+function openSheet(sel, focusSel) {
+  $(sel).hidden = false; placeSheets();
+  const f = focusSel ? $(focusSel) : $(sel).querySelector("button, textarea");
+  if (f) f.focus({ preventScroll: true });
+}
+function closeSheet(sel) { $(sel).hidden = true; }
+document.querySelectorAll(".sheet-wrap").forEach(w => w.addEventListener("click", e => { if (e.target === w) w.hidden = true; }));
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+  document.querySelectorAll(".sheet-wrap:not([hidden])").forEach(w => w.hidden = true);
+  if (!$("#coach").hidden) $("#coach-ok").click();
+});
+const anyOverlay = () => !$("#coach").hidden || !!document.querySelector(".sheet-wrap:not([hidden])");
+
 function renderStack() {
   const stack = $("#stack");
   stack.innerHTML = "";
@@ -1113,14 +1327,22 @@ function cardEl(c) {
   el.querySelector(".edit-btn").addEventListener("click", () => startEdit(el, c));
   return el;
 }
+let editing = null;
 function startEdit(el, c) {
-  const body = el.querySelector(".card-body");
-  body.innerHTML = `<span class="glyph" aria-hidden="true">${esc(c.glyph)}</span><label class="label" for="edit-title">${esc(T().rewrite)}</label><textarea id="edit-title" class="edit-area" rows="3">${esc(c.title)}</textarea>`;
-  const btn = el.querySelector(".edit-btn");
-  btn.textContent = T().save;
-  const ta = body.querySelector("textarea"); ta.focus();
-  btn.onclick = () => { const v = ta.value.trim(); if (v) { c.title = v.slice(0, 120); c.detail = c.detail ? T().editedBy + " " + c.detail : T().editedBy; } renderStack(); };
+  editing = c;
+  $("#edit-title").value = c.title; $("#edit-detail").value = c.detail;
+  openSheet("#edit-sheet", "#edit-title");
 }
+$("#edit-form").addEventListener("submit", e => {
+  e.preventDefault();
+  if (editing) {
+    const t = $("#edit-title").value.trim();
+    if (t) editing.title = t.slice(0, 120);
+    editing.detail = $("#edit-detail").value.trim().slice(0, 260);
+  }
+  editing = null; closeSheet("#edit-sheet"); renderStack();
+});
+$("#edit-cancel").addEventListener("click", () => { editing = null; closeSheet("#edit-sheet"); });
 function placeholder() {
   const el = document.createElement("div");
   el.className = "card placeholder";
@@ -1191,7 +1413,8 @@ document.querySelectorAll(".ctl").forEach(b => b.addEventListener("click", () =>
 }));
 document.addEventListener("keydown", e => {
   if (S.phase !== "swipe" && S.phase !== "review") return;
-  if (e.target.closest && e.target.closest("textarea")) return;
+  if (anyOverlay() || S.leaving) return;
+  if (e.target.closest && e.target.closest("textarea, input")) return;
   const d = { ArrowRight: "right", ArrowLeft: "left", ArrowUp: "up", ArrowDown: "down" }[e.key];
   const el = $("#stack .card.top");
   if (d && el && allowed(d)) { e.preventDefault(); fly(el, d); }
@@ -1226,42 +1449,59 @@ function copyText() {
 }
 $("#copy").addEventListener("click", () => {
   const btn = $("#copy");
-  const done = ok => { btn.textContent = ok ? T().copied : T().selectCopy; setTimeout(() => btn.textContent = T().copy, 1800); };
+  const done = ok => { btn.textContent = ok ? T().copied : T().selectCopy; setTimeout(() => btn.textContent = copyLabel(), 1800); };
   const fallback = () => { const r = document.createRange(); r.selectNodeContents($("#output")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); done(false); };
   try { navigator.clipboard.writeText(copyText()).then(() => done(true), fallback); } catch { fallback(); }
 });
 $("#regen").addEventListener("click", () => writeOutput());
 $("#again").addEventListener("click", () => {
   if (S.outCtl) S.outCtl.abort();
-  S.phase = "calib"; show("calib"); $("#scr-calib").scrollTop = 0;
+  S.phase = "calib"; show("calib"); $("#calib-scroll").scrollTop = 0; renderRecent();
 });
-
-function renderDecks() {
-  const group = (v, label) => {
-    const items = v === "hold" ? S.held : S.history.filter(h => h.verdict === v).map(h => h.card);
-    if (!items.length) return "";
-    return `<details><summary>${label} (${items.length})</summary><ul>${items.map(c => `<li><span class="g-sm" aria-hidden="true">${esc(c.glyph)}</span><span>${esc(c.title)} <span class="note">· ${esc(slotName(c.slot))}</span></span></li>`).join("")}</ul></details>`;
-  };
-  const L = T();
-  const html = group("lock", L.d_lock) + group("keep", L.d_keep) + group("hold", L.d_hold) + group("drop", L.d_drop);
-  $("#decks").innerHTML = html || `<p class="note">${esc(L.noCards)}</p>`;
+const copyLabel = () => S.cfg.output === "prompt" ? T().copyPrompt : T().copy;
+function setResultButtons(on) {
+  ["#copy", "#regen", "#share", "#download", "#refine"].forEach(sel => $(sel).disabled = !on);
+  $("#copy").textContent = copyLabel();
 }
 
+const TALLY_ICON = {
+  lock: '<svg viewBox="0 0 24 24" fill="var(--lock)" aria-hidden="true"><path d="M12 3.2l2.6 5.5 6 .7-4.4 4.1 1.2 5.9L12 16.5l-5.4 2.9 1.2-5.9L3.4 9.4l6-.7z"/></svg>',
+  keep: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--keep)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  hold: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--hold)" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>',
+  drop: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--drop)" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+};
+const TALLY_KEYS = ["lock", "keep", "hold", "drop"];
+function itemsOf(v) { return v === "hold" ? S.held : S.history.filter(h => h.verdict === v).map(h => h.card); }
+function renderDecks() {
+  const L = T();
+  if (!S.tally) S.tally = TALLY_KEYS.find(k => itemsOf(k).length) || "lock";
+  $("#tallies").innerHTML = TALLY_KEYS.map(k => `<button type="button" class="tally" data-t="${k}" aria-pressed="${k === S.tally}" aria-controls="tally-list"><b>${TALLY_ICON[k]}${itemsOf(k).length}</b><small>${esc(L["t_" + k])}</small></button>`).join("");
+  const items = itemsOf(S.tally);
+  $("#tally-list").innerHTML = items.length
+    ? items.map(c => `<li><span class="g-sm" aria-hidden="true">${esc(c.glyph)}</span><span>${esc(c.title)} <span class="sl">· ${esc(slotName(c.slot))}</span></span></li>`).join("")
+    : `<li class="note">${esc(L.emptyList)}</li>`;
+  $("#res-done").textContent = L.doneHead(S.swiped) + ((S.round || 1) > 1 ? " · " + L.roundBadge(S.round) : "");
+}
+$("#tallies").addEventListener("click", e => { const b = e.target.closest(".tally"); if (b) { S.tally = b.dataset.t; renderDecks(); } });
+
 function generate() {
-  clearInterval(S.timer);
-  S.phase = "result"; show("result");
+  clearInterval(S.timer); S.leaving = false;
+  S.phase = "result"; show("result"); $("#result-scroll").scrollTop = 0;
+  S.tally = null; $("#res-note").textContent = "";
   $("#res-kind").textContent = OUT_NAME[S.cfg.output];
-  $("#res-name").textContent = T().sessionName(TYPE_NAME[S.cfg.type]);
-  renderDecks();
+  S.name = S.demo ? T().demoName : T().sessionName(TYPE_NAME[S.cfg.type]);
+  $("#res-name").textContent = S.name;
+  renderDecks(); setResultButtons(false);
   if (S.live) {
-    $("#res-summary").textContent = T().summarising;
+    S.summary = ""; $("#res-summary").textContent = T().summarising;
     aiJson(summaryPrompt()).then(r => {
-      if (r && r.name) $("#res-name").textContent = String(r.name).slice(0, 60);
-      $("#res-summary").textContent = r && r.summary ? String(r.summary) : demoSummary();
-    }).catch(() => { $("#res-summary").textContent = demoSummary(); });
+      if (r && r.name) S.name = String(r.name).slice(0, 60);
+      S.summary = r && r.summary ? String(r.summary) : demoSummary();
+    }).catch(() => { S.summary = demoSummary(); }).then(() => {
+      $("#res-name").textContent = S.name; $("#res-summary").textContent = S.summary; saveRun();
+    });
   } else {
-    $("#res-name").textContent = T().demoName;
-    $("#res-summary").textContent = demoSummary();
+    S.summary = demoSummary(); $("#res-summary").textContent = S.summary;
   }
   writeOutput();
 }
@@ -1269,14 +1509,17 @@ function demoSummary() {
   const L = titles("lock"), K = titles("keep"), H = titles("hold");
   const parts = [S.cfg.topic.replace(/[.!?]*$/, ".")];
   const X = T();
-  parts.push(L.length ? X.sum_built(L.slice(0, 3).join(", ").toLowerCase(), L.length > 3) : X.sum_noLock(K.length));
+  parts.push(L.length ? X.sum_built(L.slice(0, 3).map(t => t.replace(/[.?!]+$/, "")).join(", "), L.length > 3) : X.sum_noLock(K.length));
   parts.push(H.length ? X.sum_open(H.length) : X.sum_none);
   return parts.join(" ");
 }
 async function writeOutput() {
   const status = $("#out-status"), out = $("#output");
-  $("#copy").disabled = true; $("#regen").disabled = true;
-  if (!S.live) { S.outText = demoOutput(); out.innerHTML = md(S.outText); status.textContent = T().sampleOutput; $("#copy").disabled = false; return; }
+  setResultButtons(false);
+  if (!S.live) {
+    S.outText = S.demo ? demoOutput() : localOutput(); out.innerHTML = md(S.outText);
+    status.textContent = S.demo ? T().sampleOutput : T().builtFromCards; setResultButtons(true); saveRun(); return;
+  }
   if (S.outCtl) S.outCtl.abort();
   const ctl = S.outCtl = new AbortController();
   const t0 = Date.now(); let streaming = false;
@@ -1309,15 +1552,128 @@ async function writeOutput() {
       out.innerHTML = `<p class="err">${esc(ERR[code] || ERR.upstream_error)} <span class="note">(${esc(code)})</span></p><p class="note">${esc(T().fallbackNote)}</p>` + md(S.outText);
       status.textContent = T().builtFromCards;
     }
-    $("#copy").disabled = false; $("#regen").disabled = false;
+    setResultButtons(true); saveRun();
     return;
   }
   if (ctl !== S.outCtl) return;
   clearInterval(S.outTimer);
   S.outText = text; out.innerHTML = md(text);
-  status.textContent = truncated ? T().cutShort : OUT_NAME[S.cfg.output];
-  $("#copy").disabled = !S.outText; $("#regen").disabled = false;
+  status.textContent = truncated ? T().cutShort : "";
+  setResultButtons(true); saveRun();
 }
+
+/* ---------- saved runs (this browser only) ---------- */
+const RUNS_KEY = "swipestorm.runs.v1";
+function loadRuns() { try { const r = JSON.parse(localStorage.getItem(RUNS_KEY) || "[]"); return Array.isArray(r) ? r : []; } catch { return []; } }
+function storeRuns(runs) { try { localStorage.setItem(RUNS_KEY, JSON.stringify(runs.slice(0, 12))); return true; } catch { return false; } }
+function saveRun() {
+  if (!S.runId || !S.outText) return;
+  const run = { id: S.runId, at: Date.now(), cfg: S.cfg, slots: S.slots, history: S.history, held: S.held, swiped: S.swiped,
+    round: S.round || 1, focus: S.focus || "", name: S.name, summary: S.summary, outText: S.outText, live: S.live, demo: !!S.demo };
+  const runs = loadRuns().filter(r => r.id !== run.id); runs.unshift(run);
+  if (storeRuns(runs)) $("#res-note").textContent = T().savedNote;
+}
+function renderRecent() {
+  const runs = loadRuns(), f = $("#recent-field");
+  f.hidden = !runs.length; if (!runs.length) return;
+  const L = T(), fmt = new Intl.DateTimeFormat(lang === "hu" ? "hu-HU" : "en-GB", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  $("#recent").innerHTML = runs.slice(0, 5).map(r => {
+    const name = r.name || (r.cfg && r.cfg.topic) || "Swipestorm";
+    return `<li><button type="button" class="recent-open" data-id="${esc(r.id)}"><b>${esc(name)}</b><small>${esc(fmt.format(r.at))} · ${esc(STR[lang].out[r.cfg && r.cfg.output] || "")}</small></button>`
+      + `<button type="button" class="icon-btn" data-del="${esc(r.id)}" aria-label="${esc(L.deleteAria(name))}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li>`;
+  }).join("");
+}
+$("#recent").addEventListener("click", e => {
+  const del = e.target.closest("[data-del]");
+  if (del) { storeRuns(loadRuns().filter(r => String(r.id) !== del.dataset.del)); renderRecent(); return; }
+  const op = e.target.closest("[data-id]"); if (op) openRun(op.dataset.id);
+});
+async function openRun(id) {
+  const r = loadRuns().find(x => String(x.id) === String(id)); if (!r) return;
+  await aiReady;
+  Object.assign(S, { cfg: { ...S.cfg, ...r.cfg }, slots: r.slots || [], history: r.history || [], held: r.held || [], deck: [], swiped: r.swiped || 0,
+    round: r.round || 1, focus: r.focus || "", name: r.name || "", summary: r.summary || "", outText: r.outText || "", runId: r.id,
+    demo: !!r.demo, live: !r.demo && !!r.live && aiLive(), fetchErr: null, fetching: false, lastFirst: null, leaving: false, limit: 0, timed: false, tally: null });
+  S.uid = Math.max(S.uid, ...S.history.map(h => h.card.id || 0), ...S.held.map(c => c.id || 0));
+  $("#topic").value = S.cfg.topic; $("#temp").value = S.cfg.temp; syncChips(); syncTemp();
+  S.phase = "result"; show("result"); $("#result-scroll").scrollTop = 0;
+  $("#res-kind").textContent = OUT_NAME[S.cfg.output]; $("#res-name").textContent = S.name; $("#res-summary").textContent = S.summary;
+  $("#output").innerHTML = md(S.outText); $("#out-status").textContent = ""; $("#res-note").textContent = T().savedNote;
+  renderDecks(); setResultButtons(true);
+}
+
+/* ---------- share and download ---------- */
+function shareText() { return `${S.name}\n\n${S.summary}\n\n${copyText()}`; }
+$("#share").addEventListener("click", async () => {
+  const text = shareText(), note = $("#res-note");
+  if (navigator.share && AI.mode !== "claude") {
+    try { await navigator.share({ title: S.name, text }); return; }
+    catch (e) { if (e && e.name === "AbortError") return; }
+  }
+  try { await navigator.clipboard.writeText(text); note.textContent = T().copiedShare; }
+  catch { note.textContent = T().selectCopy; const r = document.createRange(); r.selectNodeContents($("#output")); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); }
+});
+function buildMarkdown() {
+  const L = T();
+  const sec = k => { const it = itemsOf(k); return it.length ? `## ${L["t_" + k]}\n` + it.map(c => `- ${c.glyph} ${c.title}`).join("\n") + "\n" : ""; };
+  return `# ${S.name}\n\n${S.summary}\n\n> ${S.cfg.topic}\n\n${TALLY_KEYS.map(sec).filter(Boolean).join("\n")}\n---\n\n## ${OUT_NAME[S.cfg.output]}\n\n${S.outText.trim()}\n`;
+}
+function fileName() {
+  const slug = (S.name || "swipestorm").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "swipestorm";
+  return `${slug}-${new Date().toISOString().slice(0, 10)}.md`;
+}
+$("#download").addEventListener("click", async () => {
+  const data = buildMarkdown(), filename = fileName(), note = $("#res-note");
+  if (AI.mode === "claude") {
+    let dl = null; try { dl = await window.claude.use("downloads"); } catch {}
+    if (dl) {
+      try { await dl.save({ filename, data }); note.textContent = T().downloaded; }
+      catch (e) { note.textContent = e && e.code === "declined" ? T().dlDeclined : T().dlFailed; }
+      return;
+    }
+  }
+  try {
+    const url = URL.createObjectURL(new Blob([data], { type: "text/markdown;charset=utf-8" }));
+    const a = document.createElement("a"); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000); note.textContent = T().downloaded;
+  } catch { note.textContent = T().dlFailed; }
+});
+
+/* ---------- refinement round ---------- */
+let refineN = 6, refineOut = "prompt";
+function remainingDemo() {
+  const seen = new Set(S.history.map(h => h.card.title).concat(S.held.map(c => c.title)));
+  return DEMO[lang].cards.filter(c => !seen.has(c[3]));
+}
+const canDeal = () => S.live || (S.demo && remainingDemo().length > 0);
+function renderRefine() {
+  const L = T(), deal = canDeal();
+  if (!deal) refineN = 0;
+  $("#refine-out").innerHTML = ["brief", "plan", "spec", "prompt"].map(k => `<button type="button" class="chip tile" data-v="${k}" aria-pressed="${k === refineOut}">${L["out_" + k]}</button>`).join("");
+  document.querySelectorAll("#refine-cards .chip").forEach(b => { const n = +b.dataset.n; b.disabled = !deal && n > 0; b.setAttribute("aria-pressed", String(n === refineN)); });
+  const sn = $("#refine-sample"); sn.hidden = deal; sn.textContent = S.demo ? L.noSampleLeft : L.noAiCards;
+}
+$("#refine").addEventListener("click", () => {
+  refineOut = S.cfg.output; refineN = canDeal() ? 6 : 0; $("#refine-focus").value = "";
+  renderRefine(); openSheet("#refine-sheet", null);
+});
+$("#refine-out").addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (b) { refineOut = b.dataset.v; renderRefine(); } });
+$("#refine-cards").addEventListener("click", e => { const b = e.target.closest("[data-n]"); if (b && !b.disabled) { refineN = +b.dataset.n; renderRefine(); } });
+$("#refine-cancel").addEventListener("click", () => closeSheet("#refine-sheet"));
+$("#refine-form").addEventListener("submit", e => {
+  e.preventDefault(); closeSheet("#refine-sheet");
+  if (S.outCtl) S.outCtl.abort();
+  S.cfg.output = refineOut; S.focus = $("#refine-focus").value.trim(); S.round = (S.round || 1) + 1;
+  syncChips();
+  if (!refineN) { generate(); return; }
+  Object.assign(S, { phase: "swipe", deck: [], limit: S.swiped + refineN, timed: false, endAt: 0, fetchErr: null, fetching: false, lastFirst: null, leaving: false });
+  show("swipe");
+  if (!S.live) {
+    S.deck = remainingDemo().slice(0, refineN).map(([slot, kind, glyph, title, detail]) => mkCard({ slot, kind, glyph, title, detail }));
+    S.limit = S.swiped + S.deck.length; render(); return;
+  }
+  render(); ensureDeck();
+});
 
 /* ---------- output built from the cards (fallback when the AI fails, and the sample deck) ---------- */
 const OUT_TXT = {
@@ -1411,7 +1767,10 @@ refreshLang = () => {
   if (S.phase === "result") {
     renderDecks();
     $("#res-kind").textContent = OUT_NAME[S.cfg.output];
+    $("#copy").textContent = copyLabel();
   }
+  syncSummary(); renderRecent();
+  if (!$("#refine-sheet").hidden) renderRefine();
 };
 $("#lang-toggle").addEventListener("click", e => {
   const b = e.target.closest("button[data-lang]"); if (b) setLang(b.dataset.lang);
@@ -1425,7 +1784,7 @@ function autoLang(text) {
 let langTimer = 0;
 $("#topic").addEventListener("input", e => { clearTimeout(langTimer); langTimer = setTimeout(() => autoLang(e.target.value), 500); });
 $("#examples").addEventListener("click", () => { lastDetected = lang; });
-applyStatic(); syncTemp();
+applyStatic(); syncTemp(); syncSummary(); renderRecent(); renderAI();
 })();
 </script>
 
