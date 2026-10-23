@@ -28,7 +28,7 @@
   --f-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
 }
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]):not([data-ss-theme="light"]){
   --desk:#121820; --desk-2:#1a222d; --card:#1e2631; --ink:#e7ecf3; --muted:#9aa5b5; --line:#2f3a48;
   --rule-blue:#28354a; --rule-red:#874540;
   --accent:#86a2ff; --accent-ink:#0c1530;
@@ -36,13 +36,21 @@
   --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 30px -10px rgba(0,0,0,.6);
   color-scheme:dark;
 }}
-:root[data-theme="dark"]{
+:root[data-theme="dark"],:root[data-ss-theme="dark"]{
   --desk:#121820; --desk-2:#1a222d; --card:#1e2631; --ink:#e7ecf3; --muted:#9aa5b5; --line:#2f3a48;
   --rule-blue:#28354a; --rule-red:#874540;
   --accent:#86a2ff; --accent-ink:#0c1530;
   --keep:#3cc58b; --drop:#ff6c62; --lock:#f2b632; --hold:#86a6e6;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 30px -10px rgba(0,0,0,.6);
   color-scheme:dark;
+}
+:root[data-ss-theme="light"]{
+  --desk:#e4e9f0; --desk-2:#d7dee8; --card:#fdfdfa; --ink:#1b2430; --muted:#5b6677; --line:#c9d1dc;
+  --rule-blue:#cfdcf0; --rule-red:#e08a83;
+  --accent:#2c50cf; --accent-ink:#ffffff;
+  --keep:#17905f; --drop:#cf3e36; --lock:#b67a00; --hold:#46679f;
+  --shadow:0 1px 2px rgba(20,32,52,.10),0 10px 28px -10px rgba(20,32,52,.30);
+  color-scheme:light;
 }
 html,body{height:100%}
 body{background:var(--desk);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;overflow:hidden}
@@ -79,7 +87,7 @@ button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outl
 .calib{gap:0}
 .brand{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:4px}
 .brand-main{display:flex;align-items:center;gap:10px;min-width:0}
-.brand h1{font-family:var(--f-display);font-weight:800;font-size:clamp(28px,8.6vw,36px);line-height:.95;margin:0;letter-spacing:.01em;text-transform:uppercase;white-space:nowrap;overflow:hidden;min-width:0}
+.brand h1{font-family:var(--f-display);font-weight:800;font-size:clamp(24px,7.4vw,36px);line-height:.95;margin:0;letter-spacing:.01em;text-transform:uppercase;white-space:nowrap;overflow:hidden;min-width:0}
 .brand h1 span{color:var(--accent)}
 /* Logo mark: three ruled index cards turning around one point */
 .mark{flex:0 0 auto;display:block}
@@ -91,6 +99,11 @@ button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outl
 .lang{display:inline-flex;flex:0 0 auto;border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .lang button{background:none;border:0;min-height:32px;padding:0 9px;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;color:var(--muted)}
 .lang button[aria-pressed="true"]{background:var(--desk-2);color:var(--ink)}
+.brand-tools{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.theme-btn{width:34px;height:34px;display:grid;place-items:center;background:none;border:1px solid var(--line);border-radius:8px;color:var(--ink)}
+.theme-btn .moon{display:none}
+:root.is-dark .theme-btn .sun{display:none}
+:root.is-dark .theme-btn .moon{display:block}
 .field{display:flex;flex-direction:column;gap:8px}
 .field.tight{gap:6px}
 .label-row{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
@@ -103,17 +116,15 @@ textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--card);bor
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{background:var(--card);border:1px solid var(--line);border-radius:10px;min-height:40px;padding:0 12px;font-size:14px;color:var(--ink)}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--card);border-color:var(--ink);font-weight:700}
-.seg-row{display:flex;gap:6px}
-.seg-row .chip{flex:1;min-width:0;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.seg-row .chip.wide{flex:1.4}
+.seg-row{display:flex;flex-wrap:wrap;gap:6px}
+.seg-row .chip{flex:1 1 auto;padding:0 10px;white-space:nowrap}
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .tile{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;text-align:left;min-height:52px;padding:8px 12px;font-size:15px;font-weight:700}
-.tile small{font-weight:400;font-size:12px;color:var(--muted)}
+.tile small{font-weight:400;font-size:12px;color:var(--muted);overflow-wrap:anywhere}
 .tile[aria-pressed="true"] small{color:var(--desk-2)}
 #temp{width:100%;accent-color:var(--accent);margin:0}
-.segmented{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;background:var(--desk-2);border-radius:12px;padding:3px}
-.segmented.four{grid-template-columns:1.8fr 1fr 1fr 1fr}
-.segmented .chip{border:0;background:transparent;min-height:38px;padding:0 4px;border-radius:9px;white-space:nowrap}
+.segmented{display:flex;gap:3px;background:var(--desk-2);border-radius:12px;padding:3px}
+.segmented .chip{flex:1 1 auto;border:0;background:transparent;min-height:38px;padding:0 8px;border-radius:9px;white-space:nowrap}
 .segmented .chip[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(20,32,52,.18)}
 .ai-row{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:0 14px;text-align:left;font-size:14px}
 .ai-row .dot{width:9px;height:9px;border-radius:50%;background:var(--muted);flex:0 0 auto}
@@ -291,8 +302,14 @@ textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--card);bor
           </svg>
           <h1>Swipe<span>storm</span></h1>
         </div>
-        <div class="lang" role="group" aria-label="Language / Nyelv" id="lang-toggle">
-          <button type="button" data-lang="en" lang="en">EN</button><button type="button" data-lang="hu" lang="hu">HU</button>
+        <div class="brand-tools">
+          <button type="button" class="theme-btn" id="theme-btn" aria-label="Dark mode" aria-pressed="false">
+            <svg class="sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+            <svg class="moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
+          </button>
+          <div class="lang" role="group" aria-label="Language / Nyelv" id="lang-toggle">
+            <button type="button" data-lang="en" lang="en">EN</button><button type="button" data-lang="hu" lang="hu">HU</button>
+          </div>
         </div>
       </div>
 
@@ -678,6 +695,8 @@ Object.assign(STR.en, {
   noSampleLeft: "The sample deck has no cards left, so only a rewrite is possible.",
   noAiCards: "New cards need an AI connection, so only a rewrite is possible.",
 });
+Object.assign(STR.en, { toDark: "Switch to dark mode", toLight: "Switch to light mode" });
+Object.assign(STR.hu, { toDark: "Váltás sötét módra", toLight: "Váltás világos módra" });
 Object.assign(STR.hu, {
   type_other: "Egyéb", len_c12: "12", len_c20: "20 kártya", len_c30: "30",
   cardsN: n => `${n} kártya`, minN: n => `${n} perc`, startSummary: (len, out) => `${len} · a végén: ${out}`,
@@ -1758,6 +1777,33 @@ function demoOutput() {
   return V.brief(per, H);
 }
 
+/* ---------- light / dark switch (remembered per browser; default follows the system) ---------- */
+const THEME_KEY = "swipestorm.theme";
+const darkMQ = window.matchMedia ? matchMedia("(prefers-color-scheme: dark)") : null;
+function isDark() {
+  const r = document.documentElement, own = r.getAttribute("data-ss-theme");
+  if (own) return own === "dark";
+  const host = r.getAttribute("data-theme");
+  if (host) return host === "dark";
+  return !!(darkMQ && darkMQ.matches);
+}
+function syncTheme() {
+  const dark = isDark(), b = $("#theme-btn");
+  document.documentElement.classList.toggle("is-dark", dark);
+  b.setAttribute("aria-pressed", String(dark));
+  b.setAttribute("aria-label", dark ? T().toLight : T().toDark);
+  const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.content = dark ? "#121820" : "#2c50cf";
+}
+try { const t = localStorage.getItem(THEME_KEY); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-ss-theme", t); } catch {}
+$("#theme-btn").addEventListener("click", () => {
+  const next = isDark() ? "light" : "dark";
+  document.documentElement.setAttribute("data-ss-theme", next);
+  try { localStorage.setItem(THEME_KEY, next); } catch {}
+  syncTheme();
+});
+if (darkMQ && darkMQ.addEventListener) darkMQ.addEventListener("change", syncTheme);
+new MutationObserver(syncTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
 /* ---------- language wiring ---------- */
 refreshLang = () => {
   applyStatic();
@@ -1769,7 +1815,7 @@ refreshLang = () => {
     $("#res-kind").textContent = OUT_NAME[S.cfg.output];
     $("#copy").textContent = copyLabel();
   }
-  syncSummary(); renderRecent();
+  syncSummary(); renderRecent(); syncTheme();
   if (!$("#refine-sheet").hidden) renderRefine();
 };
 $("#lang-toggle").addEventListener("click", e => {
@@ -1784,7 +1830,7 @@ function autoLang(text) {
 let langTimer = 0;
 $("#topic").addEventListener("input", e => { clearTimeout(langTimer); langTimer = setTimeout(() => autoLang(e.target.value), 500); });
 $("#examples").addEventListener("click", () => { lastDetected = lang; });
-applyStatic(); syncTemp(); syncSummary(); renderRecent(); renderAI();
+applyStatic(); syncTemp(); syncSummary(); renderRecent(); renderAI(); syncTheme();
 })();
 </script>
 
