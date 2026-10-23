@@ -53,4 +53,4 @@ Edit `index.html` and reload. Everything is in that one file: styles, markup and
 
 ## Brand
 
-The logo is three ruled index cards turning around one point: a brainstorm drawn as a storm of cards. Files in [`brand/`](brand/): `mark.svg` (the mark on its own) and `icon.svg` (app icon). The site uses `favicon.svg` and `apple-touch-icon.png`.
+The logo is three ruled index cards turning around one point: a brainstorm drawn as a storm of cards. Files in [`brand/`](brand/): `mark.svg` (the mark on its own) and `icon.svg` (app icon). The site uses `favicon.svg`, `apple-touch-icon.png`, and `manifest.webmanifest` with the PNG icons in `icons/`, so phones can install it to the home screen. There is deliberately no service worker: the app needs the network for every card, and skipping it means updates show up immediately.
