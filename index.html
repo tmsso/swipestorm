@@ -1274,7 +1274,7 @@ function render() {
 }
 function leaveSession() {
   S.leaving = false; clearInterval(S.timer);
-  S.phase = "calib"; show("calib"); renderRecent();
+  S.phase = "calib"; show("calib"); renderRecent(); fitWordmark();
 }
 $("#back").addEventListener("click", () => {
   if (!S.history.length && !S.held.length) { leaveSession(); return; }
@@ -1475,7 +1475,7 @@ $("#copy").addEventListener("click", () => {
 $("#regen").addEventListener("click", () => writeOutput());
 $("#again").addEventListener("click", () => {
   if (S.outCtl) S.outCtl.abort();
-  S.phase = "calib"; show("calib"); $("#calib-scroll").scrollTop = 0; renderRecent();
+  S.phase = "calib"; show("calib"); $("#calib-scroll").scrollTop = 0; renderRecent(); fitWordmark();
 });
 const copyLabel = () => S.cfg.output === "prompt" ? T().copyPrompt : T().copy;
 function setResultButtons(on) {
@@ -1777,6 +1777,16 @@ function demoOutput() {
   return V.brief(per, H);
 }
 
+/* ---------- keep the wordmark whole, whatever font has loaded ---------- */
+function fitWordmark() {
+  const h = document.querySelector(".brand h1"); if (!h || !h.offsetParent) return;
+  h.style.fontSize = "";
+  let size = parseFloat(getComputedStyle(h).fontSize);
+  while (h.scrollWidth > h.clientWidth + 1 && size > 18) { size -= 1; h.style.fontSize = size + "px"; }
+}
+addEventListener("resize", fitWordmark);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitWordmark);
+
 /* ---------- light / dark switch (remembered per browser; default follows the system) ---------- */
 const THEME_KEY = "swipestorm.theme";
 const darkMQ = window.matchMedia ? matchMedia("(prefers-color-scheme: dark)") : null;
@@ -1830,7 +1840,7 @@ function autoLang(text) {
 let langTimer = 0;
 $("#topic").addEventListener("input", e => { clearTimeout(langTimer); langTimer = setTimeout(() => autoLang(e.target.value), 500); });
 $("#examples").addEventListener("click", () => { lastDetected = lang; });
-applyStatic(); syncTemp(); syncSummary(); renderRecent(); renderAI(); syncTheme();
+applyStatic(); syncTemp(); syncSummary(); renderRecent(); renderAI(); syncTheme(); fitWordmark();
 })();
 </script>
 
